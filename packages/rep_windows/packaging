@@ -1,0 +1,34 @@
+$pkg_name="rep"
+$pkg_path="github.com\cloudfoundry-incubator\rep\cmd\rep"
+$env:GOROOT="C:\var\vcap\packages\golang-windows\go"
+$env:PATH="${env:GOROOT}\bin;${env:PATH}"
+
+function CompileGo {
+    go.exe build -o "${BOSH_INSTALL_TARGET}\${pkg_name}.exe" "${pkg_path}"
+    $?
+}
+
+try
+{
+    # Create GOPATH
+    $BOSH_INSTALL_TARGET = Resolve-Path $env:BOSH_INSTALL_TARGET
+    New-Item -ItemType "directory" -Force "${BOSH_INSTALL_TARGET}/src"
+    $env:GOPATH=$BOSH_INSTALL_TARGET
+
+    robocopy /E "${PWD}" "${BOSH_INSTALL_TARGET}/src"
+
+    if (-Not CompileGo) {
+        $Host.UI.WriteErrorLine("Error compiling: ${pkg_path}")
+        Exit 1
+    }
+
+    # Cleanup build artifacts
+    Remove-Item -Force -Recurse "${BOSH_INSTALL_TARGET}/src"
+}
+catch
+{
+    $Host.UI.WriteErrorLine($_.Exception.Message)
+    Exit 1
+}
+
+Exit 0
