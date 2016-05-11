@@ -17,7 +17,7 @@ try
 
     robocopy /E "${PWD}" "${BOSH_INSTALL_TARGET}/src"
 
-    if (-Not CompileGo) {
+    if (-Not (CompileGo)) {
         $Host.UI.WriteErrorLine("Error compiling: ${pkg_path}")
         Exit 1
     }
