@@ -1,7 +1,15 @@
+try {
+    $BOSH_INSTALL_TARGET = Resolve-Path $env:BOSH_INSTALL_TARGET
+} catch {
+    $Host.UI.WriteErrorLine($_.Exception.Message)
+    Exit 1
+}
+
+$env:GOROOT="C:\var\vcap\packages\golang-windows\go"
+$env:GOPATH="${BOSH_INSTALL_TARGET}"
+$env:PATH="${env:GOROOT}\bin;${env:PATH}"
 $pkg_name="rep"
 $pkg_path="github.com\cloudfoundry-incubator\rep\cmd\rep"
-$env:GOROOT="C:\var\vcap\packages\golang-windows\go"
-$env:PATH="${env:GOROOT}\bin;${env:PATH}"
 
 function CompileGo {
     go.exe build -o "${BOSH_INSTALL_TARGET}\${pkg_name}.exe" "${pkg_path}"
@@ -11,10 +19,7 @@ function CompileGo {
 try
 {
     # Create GOPATH
-    $BOSH_INSTALL_TARGET = Resolve-Path $env:BOSH_INSTALL_TARGET
     New-Item -ItemType "directory" -Force "${BOSH_INSTALL_TARGET}/src"
-    $env:GOPATH=$BOSH_INSTALL_TARGET
-
     robocopy /E "${PWD}" "${BOSH_INSTALL_TARGET}/src"
 
     if (-Not (CompileGo)) {
