@@ -117,3 +117,6 @@ properties:
     description: "capacity of the tls client cache"
   diego.rep.bbs.max_idle_conns_per_host:
     description: "maximum number of idle http connections"
+
+  diego.zone:
+    description: "Site (datacenter name), used for node name uniqness"
