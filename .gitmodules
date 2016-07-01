@@ -39,7 +39,7 @@
 	url = https://github.com/ajstarks/svgo
 [submodule "src/github.com/cloudfoundry-incubator/executor"]
 	path = src/github.com/cloudfoundry-incubator/executor
-	url = https://github.com/cloudfoundry-incubator/executor
+	url = https://github.com/nimbus-cloud/executor
 	branch = master
 [submodule "src/github.com/cloudfoundry-incubator/stager"]
 	path = src/github.com/cloudfoundry-incubator/stager
@@ -51,7 +51,7 @@
 	branch = master
 [submodule "src/github.com/cloudfoundry-incubator/rep"]
 	path = src/github.com/cloudfoundry-incubator/rep
-	url = https://github.com/cloudfoundry-incubator/rep
+	url = https://github.com/nimbus-cloud/rep
 	branch = master
 [submodule "src/github.com/cloudfoundry-incubator/candiedyaml"]
 	path = src/github.com/cloudfoundry-incubator/candiedyaml
