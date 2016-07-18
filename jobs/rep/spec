@@ -120,3 +120,5 @@ properties:
 
   diego.zone:
     description: "Site (datacenter name), used for node name uniqness"
+  diego.firewall_environment:
+    description: "nb-config firewall environment: test, dev, stage, prod"

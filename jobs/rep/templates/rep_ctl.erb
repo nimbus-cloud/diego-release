@@ -87,6 +87,7 @@ case $1 in
       <%= p("diego.rep.rootfs_providers").map { |provider| "-rootFSProvider #{provider}" }.join(" ") %> \
       -cellID=<%= p("diego.zone") %>-<%= spec.job.name %>-<%= spec.index %> \
       -zone=<%= p("diego.rep.zone") %> \
+      -firewallEnv=<%= p("diego.firewall_environment") %> \
       -pollingInterval=<%= "#{p("diego.rep.polling_interval_in_seconds")}s" %> \
       -evacuationPollingInterval=<%= "#{p("diego.rep.evacuation_polling_interval_in_seconds")}s" %> \
       -evacuationTimeout=<%= "#{p("diego.rep.evacuation_timeout_in_seconds")}s" %> \
