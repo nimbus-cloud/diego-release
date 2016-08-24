@@ -48,6 +48,9 @@ case $1 in
     chown -R vcap:vcap $TMP_DIR
 
     export GOMAXPROCS=$(nproc)
+   
+    # Work around for GOLANG 1.5.3 DNS bug
+    export GODEBUG=netdns=cgo
 
     echo $$ > $PIDFILE
 
@@ -89,9 +92,13 @@ case $1 in
       <% if_p("diego.bbs.etcd.max_idle_conns_per_host") do |value| %> \
         -etcdMaxIdleConnsPerHost=<%= value %> \
       <% end %> \
+      -dropsondePort=<%= p("diego.bbs.dropsonde_port") %> \
       -listenAddress=<%= p("diego.bbs.listen_addr") %> \
       -logLevel=<%= p("diego.bbs.log_level") %> \
       -requireSSL=<%= p("diego.bbs.require_ssl") %> \
+      <% if_p("diego.bbs.desired_lrp_creation_timeout") do |value| %> \
+        -desiredLRPCreationTimeout=<%= value %> \
+      <% end %> \
       2> >(tee -a $LOG_DIR/bbs.stderr.log | logger -p user.error -t vcap.bbs) \
       1> >(tee -a $LOG_DIR/bbs.stdout.log | logger -p user.info -t vcap.bbs)
 

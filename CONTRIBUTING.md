@@ -4,15 +4,18 @@
 
 The Diego team uses GitHub and accepts contributions via [pull request](https://help.github.com/articles/using-pull-requests).
 
-The `diego-release` repository is a [BOSH](https://github.com/cloudfoundry/bosh) release for Diego. The root of this repository doubles as a [`$GOPATH`](https://golang.org/doc/code.html#GOPATH). For more information about configuring your go environment and automatically setting your `$GOPATH`, see the [instructions below](#initial-setup).
+The `diego-release` repository is a [BOSH](https://github.com/cloudfoundry/bosh) release for Diego. The root of this repository doubles as a Golang [`GOPATH`](https://golang.org/doc/code.html#GOPATH). For more information about configuring your Golang environment and automatically setting your `GOPATH` to the release directory, see the [instructions below](#initial-setup).
 
-All Diego components are submodules in diego-release and can be found in the [`src/github.com/cloudfoundry-incubator`](https://github.com/cloudfoundry-incubator/diego-release/tree/master/src/github.com/cloudfoundry-incubator) and [`src/github.com/cloudfoundry`](https://github.com/cloudfoundry-incubator/diego-release/tree/master/src/github.com/cloudfoundry) directories.
+All Diego components are submodules in diego-release and can be found in the [`src/github.com/cloudfoundry-incubator`](https://github.com/cloudfoundry-incubator/diego-release/tree/master/src/github.com/cloudfoundry-incubator) and [`src/github.com/cloudfoundry`](https://github.com/cloudfoundry-incubator/diego-release/tree/master/src/github.com/cloudfoundry) directories of this repository.
 
-If you wish to make a change to any of the components, submit a pull request to the master branches of those repositories directly. Once accepted, those changes should make their way into `diego-release`.  If you wish to make a change to diego-release directly, please submit a pull request to the develop branch.
+If you wish to make a change to an individual Diego component, submit a pull request to the master branches of its repository. Once accepted, those changes should make their way into `diego-release`.
 
-To verify your changes before submitting a pull request, run unit tests, the inigo test suite, and the Diego Acceptance Tests (DATs). See the [testing](#testing-diego) section for more detail.
+If you wish to make a change to **diego-release** directly, please base your pull request on the **develop** branch, and not the master branch. The master branch of diego-release is reserved for the latest final BOSH release of Diego, and the only updates to that branch should be through our automated release-creation process.
+
+To verify your changes before submitting a pull request, run unit tests, the inigo test suite, and the CF Acceptance Tests (CATs). See the [testing](#testing-diego) section for more detail.
 
 ---
+
 ## Contributor License Agreement
 
 Follow these steps to make a contribution to any of our open source repositories:
@@ -46,7 +49,7 @@ automated system uses, then we manually make the Pull Request as having a CLA on
 ##Initial Setup
 This BOSH release doubles as a `$GOPATH`. It will automatically be set up for you if you have [direnv](http://direnv.net) installed.
 
-**NOTE:** diego-release and its components assume you're running go **1.4.3**. The project may not compile or work as expected with other versions of go.
+**NOTE:** diego-release and its components assume you're running go **1.6**. The project may not compile or work as expected with other versions of go.
 
     # create parent directory of cf-release and diego-release
     mkdir -p ~/workspace
@@ -103,11 +106,44 @@ To be able to run unit tests, you'll also need to install the following binaries
 
     # Install consul
     if uname -a | grep Darwin; then os=darwin; else os=linux; fi
-    curl -L -o $TMPDIR/consul-0.5.2.zip "https://dl.bintray.com/mitchellh/consul/0.5.2_${os}_amd64.zip"
+    curl -L -o $TMPDIR/consul-0.5.2.zip "https://releases.hashicorp.com/consul/0.5.2/consul_0.5.2_${os}_amd64.zip"
     unzip $TMPDIR/consul-0.5.2.zip -d $GOPATH/bin
     rm $TMPDIR/consul-0.5.2.zip
 
 To be able to run the integration test suite ("inigo"), you'll need to have a local [Concourse](http://concourse.ci) VM. Follow the instructions on the Concourse [README](https://github.com/concourse/concourse/blob/master/README.md) to set it up locally using [vagrant](https://www.vagrantup.com/). Download the fly CLI as instructed and move it somewhere visible to your `$PATH`.
+
+### Running the experimental SQL unit tests
+To run the experimental SQL unit tests, you'll need mysql running locally with the correct sql_mode and user configuration.
+
+On OS X, you can follow the these steps to install and configure mysql:
+
+1. `brew install mysql`
+2. `mysql.server start`
+3. Run `mysql_secure_installation` and set a root password
+    - Follow the on-screen prompts to complete the installation. The answers won't affect whether the unit tests can run.
+4. Create /etc/my.cnf with the following contents:
+
+    ```
+[mysqld]
+sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+    ```
+5. `mysql.server restart`
+6. Log in to the mysql console as root, using the password you specified in step 3
+
+    ```
+mysql -uroot -p<your password>
+    ```
+7. Run the following SQL commands to create a diego user with the correct permissions:
+
+    ```
+CREATE USER 'diego'@'localhost' IDENTIFIED BY 'diego_password';
+GRANT ALL PRIVILEGES ON `diego\_%`.* TO 'diego'@'localhost';
+    ```
+8. You should now be able to run the SQL unit tests. To run the tests, run the following command from the bbs submodule:
+
+    ```
+ginkgo -p db/sqldb
+    ```
 
 ## <a name="deploy-bosh-lite"></a> Deploying Diego to BOSH-Lite
 
@@ -149,7 +185,7 @@ To be able to run the integration test suite ("inigo"), you'll need to have a lo
 
         cd ~/workspace/cf-release
         ./scripts/generate-bosh-lite-dev-manifest \
-          ~/workspace/diego-release/stubs-for-cf-release/enable_diego_windows_in_cc.yml
+          ~/workspace/diego-release/manifest-generation/stubs-for-cf-release/enable_diego_windows_in_cc.yml
 
 1. Generate the Diego manifests:
 
@@ -186,9 +222,9 @@ To be able to run the integration test suite ("inigo"), you'll need to have a lo
         cf enable-feature-flag diego_docker
 
 Now you are configured to push an app to the BOSH-Lite deployment, or to run the
-[Diego Smoke Tests](https://github.com/cloudfoundry-incubator/diego-smoke-tests)
+[CF Smoke Tests](https://github.com/cloudfoundry/cf-smoke-tests)
 or the
-[Diego Acceptance Tests](https://github.com/cloudfoundry-incubator/diego-acceptance-tests).
+[CF Acceptance Tests](https://github.com/cloudfoundry/cf-acceptance-tests).
 
 ----
 ## Developer Workflow
@@ -201,9 +237,14 @@ When you're ready to commit, run:
 
     ./scripts/prepare-to-diego <story-id> <another-story-id>...
 
-This will synchronize submodules, update the BOSH package specs, run all unit tests, all integration tests, and make a commit, bringing up a commit edit dialogue.  The story IDs correspond to stories in our [Pivotal Tracker backlog](https://www.pivotaltracker.com/n/projects/1003146).  You should simultaneously also build the release and deploy it to a local [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite) environment, and run the acceptance tests.  See [Running Smoke Tests & DATs](#smokes-and-dats).
+This will synchronize submodules, update the BOSH package specs, run all unit tests, all integration tests, and make a commit, bringing up a commit edit dialogue.  The story IDs correspond to stories in our [Pivotal Tracker backlog](https://www.pivotaltracker.com/n/projects/1003146).  You should simultaneously also build the release and deploy it to a local [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite) environment, and run the acceptance tests.  See [Running Smoke Tests & CATs](#smokes-and-cats).
 
 If you're introducing a new component (e.g. a new job/errand) or changing the main path for an existing component, make sure to update `./scripts/sync-package-specs` and `./scripts/sync-submodule-config`.
+
+## Logging in Diego
+
+Please follow logging conventions as outlined [here](https://github.com/cloudfoundry-incubator/diego-dev-notes/blob/master/notes/logging-guidance.md).
+
 
 ## Testing Diego
 
@@ -220,26 +261,24 @@ If your local concourse VM is up and running, you have the `fly` CLI visible on 
     ./scripts/run-inigo
 from the root of diego-release to run the integration tests.
 
-###<a name="smokes-and-dats"></a> Running Smoke Tests & DATs
+###<a name="smokes-and-cats"></a> Running Smoke Tests, and CATs
 
-You can test that your diego-release deployment is working and integrating with cf-release by running the lightweight [diego-smoke-tests](https://github.com/cloudfoundry-incubator/diego-smoke-tests) or the more thorough [diego-acceptance-tests](https://github.com/cloudfoundry-incubator/diego-acceptance-tests). These test suites assume you have a BOSH environment to deploy cf and diego to. For local development, bosh-lite is an easy way to have a single-VM deployment. To deploy diego to bosh-lite, follow the instructions on [deploying diego to bosh-lite](README.md#deploy-bosh-lite).
+You can test that your diego-release deployment is working and integrating with cf-release by running the lightweight [cf-smoke-tests](https://github.com/cloudfoundry/cf-smoke-tests) or the more thorough [cf-acceptance-tests](https://github.com/cloudfoundry/cf-acceptance-tests). These test suites assume you have a BOSH environment to deploy cf and diego to. For local development, bosh-lite is an easy way to have a single-VM deployment. To deploy diego to bosh-lite, follow the instructions on [deploying diego to bosh-lite](README.md#deploy-bosh-lite).
 
-The instructions below assume you're using bosh-lite and have generated the manifests with the `scripts/generate-bosh-lite-manifests` script. This script will also generate manifests for the errands that run these test suites. If you did not run that script or are running tests in a different environment, substitute the relevant manifest files in the `bosh deploy` commands below.
+The instructions below assume you're using bosh-lite and have generated the
+manifests with the `scripts/generate-bosh-lite-manifests` script. This script
+will also generate manifests for the errands that run these test suites. If you
+did not run that script or are running tests in a different environment,
+substitute the relevant manifest files in the `bosh deploy` commands below.
 
-To run the diego-acceptance-tests, deploy and run the diego-acceptance-tests errand:
+To run the cf-acceptance-tests against a Diego deployed to bosh-lite, run:
 
-        bosh -n -d bosh-lite/deployments/diego-acceptance-tests.yml deploy
-        bosh -d bosh-lite/deployments/diego-acceptance-tests.yml run errand diego_acceptance_tests
+    ./scripts/run-cats-bosh-lite
 
-To run diego-smoke-tests you can similarly deploy and run an errand to run the tests, but you must make sure that the proper smoke org already exists:
+To run cf-smoke-tests you can similarly deploy and run an errand to run the tests:
 
-        # create the org for bosh lite
-        cf login -a api.bosh-lite.com -u admin -p admin --skip-ssl-validation
-        cf create-org smoke-tests
-
-        # deploy the errand for smoke tests
-        bosh -n -d bosh-lite/deployments/diego-smoke-tests.yml deploy
-        bosh -d bosh-lite/deployments/diego-smoke-tests.yml run errand diego_smoke_tests
+        # target the errand for smoke tests when running them
+        bosh -n -d bosh-lite/deployments/cf.yml run errand smoke_tests
 
 ### Running Benchmark Tests
 Running the benchmark tests isn't usually needed for most changes. However, for  changes to the BBS or the protobuf models, it may be helpful to run these tests to understand the performance impact.

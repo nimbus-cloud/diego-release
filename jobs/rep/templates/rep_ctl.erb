@@ -43,6 +43,24 @@ case $1 in
     mkdir -p $CACHE_DIR
     chown -R vcap:vcap $CACHE_DIR
 
+    trusted_certs_flag=""
+    TRUSTED_CERTS_DIR=${DATA_DIR}/trusted_certs
+    rm -rf "$TRUSTED_CERTS_DIR"
+    <% if_p("diego.rep.trusted_certs") do |value| %>
+      mkdir -p "$TRUSTED_CERTS_DIR"
+      chown -R vcap:vcap $TRUSTED_CERTS_DIR
+
+      trusted_certs_flag="--trustedSystemCertificatesPath=$TRUSTED_CERTS_DIR"
+
+      # Split files on '----END CERTIFICATE-----' and increment our file counter by 1
+      pushd $TRUSTED_CERTS_DIR
+              awk -v n=1 '
+                      split_after == 1 {n++;split_after=0}
+                      /-----END CERTIFICATE-----/ {split_after=1}
+                      NF {print > "trusted_ca_" n ".crt"}' < $CONF_DIR/certs/rep/trusted_certs.crt
+      popd
+    <% end %>
+
     if running_in_container; then
         echo "Not setting /proc/sys/net/ipv4 parameters, since I'm running inside a linux container"
     else
@@ -60,6 +78,10 @@ case $1 in
         # Default value is 0 (disabled). It is generally a safer alternative to tcp_tw_recycle
 
         echo 1 > /proc/sys/net/ipv4/tcp_tw_reuse
+
+        # NF_CONNTRACK_MAX
+        # Default value is 65536. We set it to a larger number to avoid running out of connections.
+        echo 262144 > /proc/sys/net/netfilter/nf_conntrack_max
     fi
 
     # Allowed number of open file descriptors
@@ -68,9 +90,9 @@ case $1 in
     # Enable maximum OS thread concurrency
     export GOMAXPROCS=$(nproc)
 
-    # NF_CONNTRACK_MAX
-    # Default value is 65536. We set it to a larger number to avoid running out of connections.
-    echo 262144 > /proc/sys/net/netfilter/nf_conntrack_max
+    # Work around for GOLANG 1.5.3 DNS bug
+    export GODEBUG=netdns=cgo
+
 
     chpst -u vcap:vcap /var/vcap/packages/rep/bin/rep ${bbs_sec_flags} \
       -bbsAddress=${bbs_api_url} \
@@ -80,6 +102,7 @@ case $1 in
       <% if_p("diego.rep.bbs.max_idle_conns_per_host") do |value| %> \
         -bbsMaxIdleConnsPerHost=<%= value %> \
       <% end %> \
+      -dropsondePort=<%= p("diego.rep.dropsonde_port") %> \
       -consulCluster=http://127.0.0.1:8500 \
       -debugAddr=<%= p("diego.rep.debug_addr") %> \
       -listenAddr=<%= p("diego.rep.listen_addr") %> \
@@ -91,6 +114,7 @@ case $1 in
       -pollingInterval=<%= "#{p("diego.rep.polling_interval_in_seconds")}s" %> \
       -evacuationPollingInterval=<%= "#{p("diego.rep.evacuation_polling_interval_in_seconds")}s" %> \
       -evacuationTimeout=<%= "#{p("diego.rep.evacuation_timeout_in_seconds")}s" %> \
+      ${trusted_certs_flag} \
       -skipCertVerify=<%= p("diego.ssl.skip_cert_verify") %> \
       -gardenNetwork=<%= p("diego.executor.garden.network") %> \
       -gardenAddr=<%= p("diego.executor.garden.address") %> \
@@ -111,6 +135,26 @@ case $1 in
       -maxConcurrentDownloads=<%= p("diego.executor.max_concurrent_downloads") %> \
       -tempDir=$TMP_DIR \
       -logLevel=<%= p("diego.rep.log_level") %> \
+      -gardenHealthcheckInterval=<%= p("diego.executor.garden_healthcheck.interval") %> \
+      -gardenHealthcheckTimeout=<%= p("diego.executor.garden_healthcheck.timeout") %> \
+      -gardenHealthcheckCommandRetryPause=<%= p("diego.executor.garden_healthcheck.command_retry_pause") %> \
+      -gardenHealthcheckProcessPath=<%= p("diego.executor.garden_healthcheck.process.path") %> \
+      -gardenHealthcheckProcessUser=<%= p("diego.executor.garden_healthcheck.process.user") %> \
+      <% if_p("diego.executor.garden_healthcheck.process.dir") do |value| %> \
+        -gardenHealthcheckProcessDir=<%= value %> \
+      <% end %> \
+      <% if_p("diego.executor.garden_healthcheck.process.args") do |value| %> \
+        -gardenHealthcheckProcessArgs=<%= Shellwords.shellescape(value) %> \
+      <% end %> \
+      <% if_p("diego.executor.garden_healthcheck.process.env") do |value| %> \
+        -gardenHealthcheckProcessEnv=<%= Shellwords.shellescape(value) %> \
+      <% end %> \
+      <% if_p("diego.executor.post_setup_user") do |value| %> \
+        -postSetupUser=<%= value %> \
+      <% end %> \
+      <% if_p("diego.executor.post_setup_hook") do |value| %> \
+        -postSetupHook=<%= Shellwords.shellescape(value) %> \
+      <% end %> \
       2>> $LOG_DIR/rep.stderr.log \
       1> >(tee -a $LOG_DIR/rep.stdout.log | logger -t vcap.rep) &
 

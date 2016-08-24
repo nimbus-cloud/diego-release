@@ -1,4 +1,4 @@
-# Cloud Foundry Diego [BOSH release]
+# Cloud Foundry Diego [BOSH release] [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
 
 ----
 This repo is a [BOSH](https://github.com/cloudfoundry/bosh) release for
@@ -18,22 +18,34 @@ come from [cf-release](https://github.com/cloudfoundry/cf-release).
   - The [Diego Design Notes](https://github.com/cloudfoundry-incubator/diego-design-notes) present an overview of Diego, and links to the various Diego components.
   - The [Migration Guide](https://github.com/cloudfoundry-incubator/diego-design-notes/blob/master/migrating-to-diego.md) describes how developers and operators can manage a transition from the DEAs to Diego.
   - The [Docker Support Notes](https://github.com/cloudfoundry-incubator/diego-design-notes/blob/master/docker-support.md) describe how Diego runs Docker-image-based apps in Cloud Foundry.
-  - The [SSH Access Notes](https://github.com/cloudfoundry-incubator/diego-design-notes/blob/master/ssh-access-and-policy.md) describe how to use the Diego-SSH CLI plugin to connect to app instances running on Diego.
-  - The [Diego-CF Compatibility Log](https://github.com/cloudfoundry-incubator/diego-cf-compatibility) records which versions of cf-release and diego-release are compatible, according to the Diego team's [automated testing pipeline](https://concourse.diego-ci.cf-app.com/?groups=diego).
+  - The [Diego-CF Compatibility Log](https://github.com/cloudfoundry-incubator/diego-cf-compatibility) records which versions of cf-release and diego-release are compatible, according to the Diego team's [automated testing pipeline](https://diego.ci.cf-app.com/?groups=diego).
   - [Diego's Pivotal Tracker project](https://www.pivotaltracker.com/n/projects/1003146) shows what we're working on these days.
 
-[Lattice](http://lattice.cf) is an easy-to-deploy distribution of Diego designed for experimentation with the next-generation core of Cloud Foundry.
 
 ### Table of Contents
+
+1. [BOSH Dependencies](#bosh-dependencies)
 1. [Discovering a Set of Releases to Deploy](#release-compatibility)
 1. [Deploying Diego to BOSH-Lite](#deploying-diego-to-bosh-lite)
 1. [Pushing to Diego](#pushing-to-diego)
+1. [Deploying Diego to AWS](#deploying-diego-to-aws)
 1. [Database Encryption](#database-encryption)
   1. [Configuring Encryption Keys](#configuring-encryption-keys)
 1. [TLS Configuration](#tls-configuration)
   1. [Generating TLS Certificates](#generating-tls-certificates)
   1. [Custom TLS Certificate Generation](#custom-tls-certificate-generation)
 1. [Recommended Instance Types](#recommended-instance-types)
+
+---
+
+## BOSH Dependencies
+
+When deploying diego-release via BOSH, the following minimum versions are required:
+
+* BOSH Release v206+ (Director version 1.3072.0)
+* BOSH Stemcell 3125+
+
+These versions ensure that the pre-start script in the rootfses job will be run to extract and configure the cflinuxfs2 rootfs and that the drain scripts will be called for all jobs on each VM during updates, instead of only the first job.
 
 ---
 
@@ -57,7 +69,7 @@ git clean -ffd
 
 ### From a final release of CF
 
-On the CF Release [GitHub Releases](https://github.com/cloudfoundry-incubator/diego-release/releases) page,
+On the CF Release [GitHub Releases](https://github.com/cloudfoundry/cf-release/releases) page,
 recommended versions of Diego, Garden, and ETCD are listed with each CF Release.
 This is the easiest way to correlate releases.
 
@@ -89,12 +101,19 @@ and then look up that commit's SHA in the diego-cf compatibility table.
 1. Install and start [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite),
    following its
    [README](https://github.com/cloudfoundry/bosh-lite/blob/master/README.md).
+   For garden-linux to function properly in the Diego deployment,
+   we recommend using version 9000.69.0 or later of the BOSH-Lite Vagrant box image.
 
-1. Download the latest Warden Trusty Go-Agent stemcell and upload it to BOSH-lite:
+1. Upload the latest version of the Warden BOSH-Lite stemcell directly to BOSH-Lite:
 
-        bosh public stemcells
-        bosh download public stemcell (name)
-        bosh upload stemcell (downloaded filename)
+        bosh upload stemcell https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-trusty-go_agent
+
+    Alternately, download the stemcell locally first and then upload it to BOSH-Lite:
+
+        curl -L -o bosh-lite-stemcell-latest.tgz https://bosh.io/d/stemcells/bosh-warden-boshlite-ubuntu-trusty-go_agent
+        bosh upload stemcell bosh-lite-stemcell-latest.tgz
+
+    Please note that the consul_agent job does not set up DNS correctly on version 3126 of the Warden BOSH-Lite stemcell, so we do not recommend the use of that stemcell version.
 
 1. Check out cf-release (runtime-passed branch or tagged release) from git:
 
@@ -124,7 +143,7 @@ and then look up that commit's SHA in the diego-cf compatibility table.
 
         cd ~/workspace/cf-release
         ./scripts/generate-bosh-lite-dev-manifest \
-          ~/workspace/diego-release/stubs-for-cf-release/enable_diego_windows_in_cc.yml
+          ~/workspace/diego-release/manifest-generation/stubs-for-cf-release/enable_diego_windows_in_cc.yml
 
 1. Generate the Diego manifests:
 
@@ -135,7 +154,7 @@ and then look up that commit's SHA in the diego-cf compatibility table.
 
         cd ~/workspace/cf-release
         bosh deployment bosh-lite/deployments/cf.yml
-        bosh create release --force &&
+        bosh -n create release --force &&
         bosh -n upload release &&
         bosh -n deploy
 
@@ -155,7 +174,7 @@ and then look up that commit's SHA in the diego-cf compatibility table.
 
         cd ~/workspace/diego-release
         bosh deployment bosh-lite/deployments/diego.yml
-        bosh create release --force &&
+        bosh -n create release --force &&
         bosh -n upload release &&
         bosh -n deploy
 
@@ -165,20 +184,18 @@ and then look up that commit's SHA in the diego-cf compatibility table.
         cf enable-feature-flag diego_docker
 
 Now you are configured to push an app to the BOSH-Lite deployment, or to run the
-[Diego Smoke Tests](https://github.com/cloudfoundry-incubator/diego-smoke-tests)
+[Smoke Tests](https://github.com/cloudfoundry/cf-smoke-tests)
 or the
-[Diego Acceptance Tests](https://github.com/cloudfoundry-incubator/diego-acceptance-tests).
+[CF Acceptance Tests](https://github.com/cloudfoundry/cf-acceptance-tests).
 
 > If you wish to run all of the diego jobs on a single VM, you can replace the
 > `manifest-generation/bosh-lite-stubs/instance-count-overrides.yml` stub with
 > the `manifest-generation/bosh-lite-stubs/colocated-instance-count-overrides.yml`
 > stub.
 
+## Pushing a CF Application to the Diego backend
 
----
-## Pushing to Diego
-
-1. Create new CF Org & Space:
+1. Create and target a CF org and space:
 
         cf api --skip-ssl-validation api.bosh-lite.com
         cf auth admin admin
@@ -187,8 +204,9 @@ or the
         cf create-space diego
         cf target -s diego
 
-1. Push your application without starting it:
+1. Change into your application directory and push your application without starting it:
 
+        cd <app-directory>
         cf push my-app --no-start
 
 1. [Enable Diego](https://github.com/cloudfoundry-incubator/diego-design-notes/blob/master/migrating-to-diego.md#targeting-diego) for your application.
@@ -196,6 +214,12 @@ or the
 1. Start your application:
 
         cf start my-app
+
+---
+
+##<a name="deploying-diego-to-aws"></a>Deploying Diego to AWS
+
+In order to deploy Diego to AWS follow [these instructions](examples/aws/README.md). Enjoy!
 
 ---
 ## Database Encryption
@@ -238,17 +262,17 @@ have no enforced limit. In addtion to that, the key label must not contain a
 separator.
 
 ---
-## TLS Configuration
+##<a name="tls-configuration"></a>TLS Configuration
 
 Diego Release can be configured to require TLS for communication with etcd.
-To enable or disable TLS communication with etcd, the `diego.etcd.require_ssl`
-and `diego.<component>.etcd.require_ssl` properties should be set to `true` or
+To enable or disable TLS communication with etcd, the `etcd.require_ssl`
+and `diego.bbs.etcd.require_ssl` properties should be set to `true` or
 `false`.  By default, Diego has `require_ssl` set to `true`.  When
 `require_ssl` is `true`, the operator must generate TLS certificates and keys
 for the etcd server and its clients.
 
 TLS and mutual authentication can also be enabled between etcd peers. To
-enable or disable this, the `diego.etcd.peer_require_ssl` property should be
+enable or disable this, the `etcd.peer_require_ssl` property should be
 set to `true` or `false`. By default, Diego has `peer_require_ssl` set to
 `true`.  When `peer_require_ssl` is set to `true`, the operator must provide
 TLS certificates and keys for the cluster members. The CA, server certificate,
@@ -256,9 +280,10 @@ and server key across may be shared between the client and peer configurations
 if desired.
 
 Similarly, TLS with mutual authentication can be enabled for communication to
-the BBS server, via the `diego.bbs.require_ssl` BOSH property, which defaults
-to `true`. When enabled, the operator must provide TLS certificates and keys
-for the BBS server and its clients (other components in the Diego deployment).
+the BBS server, via the `diego.bbs.require_ssl` and
+`diego.CLIENT.bbs.require_ssl` BOSH properties. These properties default to
+`true`. When enabled, the operator must provide TLS certificates and keys for
+the BBS server and its clients (other components in the Diego deployment).
 
 
 ### Generating TLS Certificates
@@ -310,8 +335,8 @@ following steps to successfully generate the required certificates.
    Created out/etcd.service.cf.internal.crt from out/etcd.service.cf.internal.csr signed by out/diegoCA.key
    ```
 
-   The manifest property `properties.diego.etcd.server_cert` should be set to the certificate in `out/etcd.service.cf.internal.crt`.
-   The manifest property `properties.diego.etcd.server_key` should be set to the certificate in `out/etcd.service.cf.internal.key`.
+   The manifest property `properties.etcd.server_cert` should be set to the certificate in `out/etcd.service.cf.internal.crt`.
+   The manifest property `properties.etcd.server_key` should be set to the certificate in `out/etcd.service.cf.internal.key`.
 
 4. Create and sign a certificate for etcd clients.
    ```
@@ -327,8 +352,8 @@ following steps to successfully generate the required certificates.
    Created out/clientName.crt from out/clientName.csr signed by out/diegoCA.key
    ```
 
-   The manifest property `properties.diego.etcd.client_cert` should be set to the certificate in `out/clientName.crt`.
-   The manifest property `properties.diego.etcd.client_key` should be set to the certificate in `out/clientName.key`.
+   The manifest property `properties.etcd.client_cert` should be set to the certificate in `out/clientName.crt`.
+   The manifest property `properties.etcd.client_key` should be set to the certificate in `out/clientName.key`.
 
 5. Create and sign a certificate for the BBS server.
    ```
@@ -347,7 +372,7 @@ following steps to successfully generate the required certificates.
    The manifest property `properties.diego.bbs.server_cert` should be set to the certificate in `out/bbs.service.cf.internal.crt`.
    The manifest property `properties.diego.bbs.server_key` should be set to the certificate in `out/bbs.service.cf.internal.key`.
 
-6. Create and sign a certificate for bbs clients.
+6. Create and sign a certificate for BBS clients.
    ```
    $ ./certstrap request-cert --common-name "clientName"
    Enter passphrase (empty for no passphrase): <hit enter for no password>
@@ -361,9 +386,11 @@ following steps to successfully generate the required certificates.
    Created out/clientName.crt from out/clientName.csr signed by out/diegoCA.key
    ```
 
-   The manifest property `properties.diego.CLIENT.bbs.client_cert` should be set to the certificate in `out/clientName.crt`,
-   and the manifest property `properties.diego.CLIENT.bbs.client_key` should be set to the certificate in `out/clientName.key`,
-   Where `CLIENT` is each of the diego components that has a BBS client.
+   For each component `CLIENT` that has a BBS client, the manifest properties
+   `properties.diego.CLIENT.bbs.client_cert` should be set to the certificate in
+   `out/clientName.crt`, and the manifest properties
+   `properties.diego.CLIENT.bbs.client_key` should be set to the certificate in
+   `out/clientName.key`.
 
 7. (Optional) Initialize a new peer certificate authority.
    ```
@@ -376,7 +403,7 @@ following steps to successfully generate the required certificates.
    Created peer/peerCA.crt
    ```
 
-   The manifest property `properties.diego.etcd.peer_ca_cert` should be set to the certificate in `peer/peerCA.crt`.
+   The manifest property `properties.etcd.peer_ca_cert` should be set to the certificate in `peer/peerCA.crt`.
 
 8. (Optional) Create and sign a certificate for the etcd peers.
    ```
@@ -392,8 +419,8 @@ following steps to successfully generate the required certificates.
    Created peer/etcd.service.cf.internal.crt from peer/etcd.service.cf.internal.csr signed by peer/peerCA.key
    ```
 
-   The manifest property `properties.diego.etcd.peer_cert` should be set to the certificate in `peer/etcd.service.cf.internal.crt`.
-   The manifest property `properties.diego.etcd.peer_key` should be set to the certificate in `peer/etcd.service.cf.internal.key`.
+   The manifest property `properties.etcd.peer_cert` should be set to the certificate in `peer/etcd.service.cf.internal.crt`.
+   The manifest property `properties.etcd.peer_key` should be set to the certificate in `peer/etcd.service.cf.internal.key`.
 
 
 ### Custom TLS Certificate Generation

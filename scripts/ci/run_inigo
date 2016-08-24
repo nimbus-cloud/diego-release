@@ -46,6 +46,9 @@ popd
 
 go install github.com/onsi/ginkgo/ginkgo
 
+# use the 1.28 version of tar that's installed in the inigo-ci docker image
+ln -s /usr/local/bin/tar ${GARDEN_BINPATH}
+
 export GARDEN_ROOTFS=/tmp/opt/inigo/rootfs
 mkdir -p $GARDEN_ROOTFS
 mount -t tmpfs tmpfs $GARDEN_ROOTFS
@@ -75,14 +78,35 @@ fi
 
 pushd $GOPATH_ROOT/src/github.com/cloudfoundry-incubator/inigo
   if [ "$GINKGO_PARALLEL" = "true" ]; then
-    ginkgo $nodes_flag -r -skipPackage=docker -failOnPending -randomizeAllSpecs -trace -race -slowSpecThreshold=10 -keepGoing "$@"
+    PACKAGES_TO_SKIP="docker"
+
+    if [ -n "$SKIP_PACKAGES" ]; then
+      PACKAGES_TO_SKIP=$PACKAGES_TO_SKIP",$SKIP_PACKAGES"
+    fi
+
+    if [ -z $SKIP_REGEX]; then
+        ginkgo $nodes_flag -r -skipPackage=${PACKAGES_TO_SKIP} -failOnPending -randomizeAllSpecs -trace -race -slowSpecThreshold=10 -keepGoing "$@"
+    else
+        ginkgo $nodes_flag -r -skipPackage=${PACKAGES_TO_SKIP} -skip=${SKIP_REGEX} -failOnPending -randomizeAllSpecs -trace -race -slowSpecThreshold=10 -keepGoing "$@"
+    fi
+
     # always run docker tests serially
     ginkgo -r -failOnPending -randomizeAllSpecs -trace -race -slowSpecThreshold=10 -keepGoing "$@" docker/
   else
+    PACKAGES_TO_SKIP="executor"
+
+    if [ -n "$SKIP_PACKAGES" ]; then
+      PACKAGES_TO_SKIP=$PACKAGES_TO_SKIP",$SKIP_PACKAGES"
+    fi
+
     # always attempt to run executor in parallel
     ginkgo -nodes=4 -r -failOnPending -randomizeAllSpecs -trace -race -slowSpecThreshold=10 "$@" executor/
 
     # run everything but executor with normal rules
-    ginkgo $nodes_flag -r -skipPackage=executor -failOnPending -randomizeAllSpecs -trace -race -slowSpecThreshold=10 -keepGoing "$@"
+    if [ -z $SKIP_REGEX]; then
+        ginkgo $nodes_flag -r -skipPackage=${PACKAGES_TO_SKIP} -failOnPending -randomizeAllSpecs -trace -race -slowSpecThreshold=10 -keepGoing "$@"
+    else
+        ginkgo $nodes_flag -r -skipPackage=${PACKAGES_TO_SKIP} -skip=${SKIP_REGEX} -failOnPending -randomizeAllSpecs -trace -race -slowSpecThreshold=10 -keepGoing "$@"
+    fi
   fi
 popd

@@ -4,73 +4,117 @@ set -e
 
 manifest_generation=$(dirname $0)/../manifest-generation
 
-function usage() {
-  >&2 echo "    Usage:
-    $0 /path/to/stub/property-overrides.yml \\
-       /path/to/stub/instance-count-overrides.yml \\
-       /path/to/stub/persistent-disk-overrides.yml \\
-       /path/to/stub/iaas-settings.yml \\
-       /path/to/stub/additional-jobs.yml \\
-       /path/to/stub/release-versions.yml \\
-       /path/to/deployment-manifests
+usage() {
+  >&2 cat <<EOF
+SYNOPSIS:
+    Generate a manifest for a Diego deployment to accompany an existing CF deployment.
 
-    Ex:
-    $0 manifest-generation/bosh-lite-stubs/property-overrides.yml \\
-       manifest-generation/bosh-lite-stubs/instance-count-overrides.yml \\
-       manifest-generation/bosh-lite-stubs/persistent-disk-overrides.yml \\
-       manifest-generation/bosh-lite-stubs/iaas-settings.yml \\
-       manifest-generation/bosh-lite-stubs/additional-jobs.yml \\
-       manifest-generation/bosh-lite-stubs/release-versions.yml \\
-       ~/deployments/bosh-lite
-"
+USAGE:
+    $0 <MANDATORY ARGUMENTS> [OPTIONAL ARGUMENTS]
+
+MANDATORY ARGUMENTS:
+    -c <cf-path>        Path to CF manifest file.
+    -i <iaas-path>      Path to IaaS-settings stub file.
+    -p <property-path>  Path to property-overrides stub file.
+
+OPTIONAL ARGUMENTS:
+    -n <count-path>     Path to instance-count-overrides stub file.
+    -v <versions-path>  Path to release-versions stub file.
+    -r                  Opt into using cflinuxfs-rootfs release.
+    -b                  Opt into using cf-release for bridge components.
+
+EXAMPLE:
+    $0 \\
+      -c ../cf-release/bosh-lite/deployments/cf.yml \\
+      -i manifest-generation/bosh-lite-stubs/iaas-settings.yml \\
+      -p manifest-generation/bosh-lite-stubs/property-overrides.yml \\
+      -n manifest-generation/bosh-lite-stubs/instance-count-overrides.yml \\
+      -v manifest-generation/bosh-lite-stubs/release-versions.yml \\
+      -r
+      -b
+EOF
   exit 1
 }
 
-if [ "$#" -eq 7 ]; then
-  property_overrides=$1
-  instance_counts=$2
-  persistent_disk=$3
-  iaas_settings=$4
-  additional_jobs=$5
-  release_versions=$6
-  deployments=$7
+rootfs_properties="${manifest_generation}/base-releases.yml";
+bridge_properties=""
+
+while getopts "c:i:p:n:k:v:rb" opt; do
+  case $opt in
+    c)
+      cf_deployment_manifest=$OPTARG
+      ;;
+    i)
+      iaas_settings=$OPTARG
+      ;;
+    p)
+      property_overrides=$OPTARG
+      ;;
+    n)
+      instance_counts=$OPTARG
+      ;;
+    k)
+      >&2 echo "DEPRECATED: Persistent disk configuration moved to IaaS-settings stub"
+      ;;
+    r)
+      rootfs_properties="${manifest_generation}/rootfs-properties.yml";
+      ;;
+    b)
+      bridge_properties="${manifest_generation}/bridge-properties.yml";
+      ;;
+    v)
+      release_versions=$OPTARG
+      ;;
+    *)
+      echo "Unknown arguments"
+      usage
+      ;;
+  esac
+done
+
+if [ -z ${cf_deployment_manifest} ]; then
+  >&2 echo "ERROR: CF manifest file is missing"
+  argument_error=true
 else
-  >&2 echo "Incorrect number of arguments"
-  usage
+  if [ ! -f "${cf_deployment_manifest}" ]; then
+    >&2 echo "ERROR: CF manifest '${cf_deployment_manifest}' is not a regular file"
+    argument_error=true
+  fi
 fi
 
-if [ ! -f "${property_overrides}" ]; then
-  >&2 echo "Property Overrides stub '${property_overrides}' is not a regular file"
-  usage
+if [ -z ${iaas_settings} ]; then
+  >&2 echo "ERROR: IaaS-settings stub file is missing"
+  argument_error=true
+else
+  if [ ! -f "${iaas_settings}" ]; then
+    >&2 echo "ERROR: IaaS Setting stub '${iaas_settings}' is not a regular file"
+    argument_error=true
+  fi
 fi
 
-if [ ! -f "${instance_counts}" ]; then
-  >&2 echo "Instance Count Overrides stub '${instance_counts}' is not a regular file"
-  usage
+if [ -z ${property_overrides} ]; then
+  >&2 echo "ERROR: Property-overrides stub file is missing"
+  argument_error=true
+
+else
+  if [ ! -f "${property_overrides}" ]; then
+    >&2 echo "ERROR: Property-overrides stub '${property_overrides}' is not a regular file"
+    argument_error=true
+  fi
 fi
 
-if [ ! -f "${persistent_disk}" ]; then
-  >&2 echo "Persistent Disk Overrides stub '${persistent_disk}' is not a regular file"
-  usage
+if [[ ! -z "${instance_counts}" && ! -f "${instance_counts}" ]]; then
+  >&2 echo "ERROR: Instance-count-overrides stub '${instance_counts}' is not a regular file"
+  argument_error=true
 fi
 
-if [ ! -f "${iaas_settings}" ]; then
-  >&2 echo "IaaS Setting stub '${iaas_settings}' is not a regular file"
-  usage
+if [[ ! -z "${release_versions}" && ! -f "${release_versions}" ]]; then
+  >&2 echo "ERROR: Release-versions stub '${release_versions}' is not a regular file"
+  argument_error=true
 fi
 
-if [ ! -f "${additional_jobs}" ]; then
-  >&2 echo "Additional Jobs stub '${additional_jobs}' is not a regular file"
-  usage
-fi
-
-if [ ! -f "${release_versions}" ]; then
-  >&2 echo "Release versions stub '${release_versions}' is not a regular file"
-  usage
-fi
-
-if [ ! -d "${deployments}" ]; then
-  >&2 echo "Deployments directory '${deployments}' is not a directory"
+if [ ! -z $argument_error ]; then
+  echo
   usage
 fi
 
@@ -79,16 +123,16 @@ tmpdir=$(mktemp -d /tmp/diego-manifest.XXXXX)
 spiff merge \
   ${manifest_generation}/config-from-cf.yml \
   ${manifest_generation}/config-from-cf-internal.yml \
-  ${deployments}/cf.yml \
+  ${cf_deployment_manifest} \
   > ${tmpdir}/config-from-cf.yml
 
 spiff merge \
   ${manifest_generation}/diego.yml \
+  ${rootfs_properties} \
+  ${bridge_properties} \
   ${property_overrides} \
   ${instance_counts} \
-  ${persistent_disk} \
   ${iaas_settings} \
-  ${additional_jobs} \
   ${release_versions} \
   ${tmpdir}/config-from-cf.yml \
   > ${tmpdir}/diego.yml

@@ -1,14 +1,14 @@
 config_from_cf:
   cf_deployment_name: (( merge ))
   cf_director_uuid: (( merge ))
-  cf_releases: (( merge ))
+  cf_release: (( merge ))
   cc:
+    internal_api_user: (( merge ))
     internal_api_password: (( merge ))
     srv_api_uri: (( merge ))
-    staging_upload_user: (( merge ))
-    staging_upload_password: (( merge ))
   consul:
     datacenter: (( merge ))
+    domain: (( merge ))
     log_level: (( merge ))
     lan_servers: (( merge ))
     ca_cert: (( merge ))
@@ -22,6 +22,21 @@ config_from_cf:
     etcd_machines: (( merge ))
     shared_secret: (( merge ))
     traffic_controller_url: (( merge ))
+    dropsonde_incoming_port: (( merge ))
+    tls:
+      ca_cert: (( merge ))
+
+  metron_agent:
+    dropsonde_incoming_port: (( merge ))
+    preferred_protocol: (( merge ))
+    enable_buffer: (( merge ))
+    buffer_size: (( merge ))
+    tls:
+      client_cert: (( merge ))
+      client_key: (( merge ))
+
+  metron_endpoint:
+    shared_secret: (( merge ))
   nats:
     user: (( merge ))
     password: (( merge ))
@@ -30,3 +45,4 @@ config_from_cf:
   uaa:
     ssh_proxy_client_secret: (( merge ))
     token_url: (( merge ))
+  app_domains: (( merge ))

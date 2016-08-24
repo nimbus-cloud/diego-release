@@ -3,7 +3,6 @@ name: bbs
 
 templates:
   bbs_ctl.erb: bin/bbs_ctl
-  dns_health_check.erb: bin/dns_health_check
   etcd_ca.crt.erb: config/certs/etcd/ca.crt
   etcd_client.crt.erb: config/certs/etcd/client.crt
   etcd_client.key.erb: config/certs/etcd/client.key
@@ -25,13 +24,32 @@ properties:
   diego.bbs.log_level:
     description: "Log level"
     default: "info"
-
+  diego.bbs.dropsonde_port:
+    description: "local metron agent's port"
+    default: 3457
   diego.bbs.auctioneer.api_url:
     description: "Address of the auctioneer API"
+    default: "http://auctioneer.service.cf.internal:9016"
+  diego.bbs.active_key_label:
+    description: "Label of the encryption key to be used when writing to the database"
+  diego.bbs.encryption_keys:
+    description: "List of encryption keys to be used"
+    default: []
+  diego.bbs.require_ssl:
+    description: "require ssl for all communication the bbs"
+    default: true
+  diego.bbs.ca_cert:
+    description: "PEM-encoded CA certificate"
+  diego.bbs.server_cert:
+    description: "PEM-encoded client certificate"
+  diego.bbs.server_key:
+    description: "PEM-encoded client key"
+  diego.bbs.desired_lrp_creation_timeout:
+    description: "expected maximum time to create all components of a desired LRP"
 
   diego.bbs.etcd.machines:
     description: "Addresses pointing to the ETCD cluster"
-
+    default: ["etcd.service.cf.internal"]
   diego.bbs.etcd.require_ssl:
     description: "enable ssl for all communication with etcd"
     default: true
@@ -46,18 +64,3 @@ properties:
   diego.bbs.etcd.max_idle_conns_per_host:
     description: "maximum number of idle http connections"
 
-  diego.bbs.active_key_label:
-    description: "Label of the encryption key to be used when writing to the database"
-  diego.bbs.encryption_keys:
-    description: "List of encryption keys to be used"
-    default: []
-
-  diego.bbs.require_ssl:
-    description: "require ssl for all communication the bbs"
-    default: true
-  diego.bbs.ca_cert:
-    description: "PEM-encoded CA certificate"
-  diego.bbs.server_cert:
-    description: "PEM-encoded client certificate"
-  diego.bbs.server_key:
-    description: "PEM-encoded client key"

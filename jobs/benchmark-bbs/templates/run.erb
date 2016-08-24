@@ -4,7 +4,7 @@ CONF_DIR=/var/vcap/jobs/benchmark-bbs/config
 
 set -e -x
 
-export GOROOT=$(readlink -nf /var/vcap/packages/golang_1.4)
+export GOROOT=$(readlink -nf /var/vcap/packages/golang)
 export PATH=${GOROOT}/bin:${PATH}
 
 export GOPATH=/var/vcap/packages/benchmark-bbs
@@ -39,9 +39,14 @@ etcd_sec_flags=""
   bbs_api_url="<%= "http://" + p("benchmark-bbs.bbs.api_location") %>"
 <% end %>
 
+# Allowed number of open file descriptors
+ulimit -n 100000
+
 ginkgo -- ${bbs_sec_flags} ${etcd_sec_flags} \
   -desiredLRPs=<%= p("benchmark-bbs.desired_lrps") %> \
   -numTrials=<%= p("benchmark-bbs.num_trials") %> \
+  -numReps=<%= p("benchmark-bbs.num_reps") %> \
+  -percentWrites=<%= p("benchmark-bbs.percent_writes") %> \
   -numPopulateWorkers=<%= p("benchmark-bbs.num_populate_workers") %> \
   -bbsAddress=${bbs_api_url} \
   <% p("benchmark-bbs.encryption_keys").each do |encryption_key| %> \

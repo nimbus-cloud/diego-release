@@ -1,14 +1,14 @@
 config_from_cf:
   cf_deployment_name: (( name ))
   cf_director_uuid: (( director_uuid ))
-  cf_releases: (( releases ))
+  cf_release: (( releases.cf ))
   cc:
+    internal_api_user: (( properties.cc.internal_api_user ))
     internal_api_password: (( properties.cc.internal_api_password ))
     srv_api_uri: (( properties.cc.srv_api_uri ))
-    staging_upload_user: (( properties.cc.staging_upload_user ))
-    staging_upload_password: (( properties.cc.staging_upload_password ))
   consul:
     datacenter: (( properties.consul.agent.datacenter ))
+    domain: (( properties.consul.agent.domain ))
     log_level: (( properties.consul.agent.log_level ))
     lan_servers: (( properties.consul.agent.servers.lan ))
     ca_cert: (( properties.consul.ca_cert ))
@@ -22,6 +22,19 @@ config_from_cf:
     etcd_machines: (( properties.loggregator.etcd.machines ))
     shared_secret: (( properties.loggregator_endpoint.shared_secret ))
     traffic_controller_url: (( "wss://doppler." properties.system_domain ":443" ))
+    dropsonde_incoming_port: (( properties.loggregator.dropsonde_incoming_port ))
+    tls:
+      ca_cert: (( properties.loggregator.tls.ca_cert ))
+  metron_endpoint:
+    shared_secret: (( properties.metron_endpoint.shared_secret ))
+  metron_agent:
+    dropsonde_incoming_port: (( properties.metron_agent.dropsonde_incoming_port ))
+    preferred_protocol: (( properties.metron_agent.preferred_protocol ))
+    enable_buffer: (( properties.metron_agent.enable_buffer ))
+    buffer_size: (( properties.metron_agent.buffer_size ))
+    tls:
+      client_cert: (( properties.metron_agent.tls.client_cert ))
+      client_key: (( properties.metron_agent.tls.client_key ))
   nats:
     user: (( properties.nats.user ))
     password: (( properties.nats.password ))
@@ -30,6 +43,7 @@ config_from_cf:
   uaa:
     ssh_proxy_client_secret: (( properties.uaa.clients.ssh-proxy.secret ))
     token_url: (( properties.uaa.url "/oauth/token" ))
+  app_domains: (( properties.app_domains ))
 
 # The keys below should not be included in the final stub
 name: (( merge ))
@@ -37,12 +51,12 @@ director_uuid: (( merge ))
 releases: (( merge ))
 properties:
   cc:
+    internal_api_user: (( merge ))
     internal_api_password: (( merge ))
     srv_api_uri: (( merge ))
-    staging_upload_user: (( merge ))
-    staging_upload_password: (( merge ))
   consul:
     agent:
+      domain: (( merge ))
       log_level: (( merge ))
       datacenter: (( merge || nil ))
       servers:
@@ -57,14 +71,28 @@ properties:
   loggregator:
     etcd:
       machines: (( merge ))
+    dropsonde_incoming_port: (( merge || nil ))
+    tls:
+      ca_cert: (( merge ))
   loggregator_endpoint:
     shared_secret: (( merge ))
+  metron_endpoint:
+    shared_secret: (( merge ))
+  metron_agent:
+    dropsonde_incoming_port: (( merge || nil ))
+    preferred_protocol: (( merge ))
+    enable_buffer: (( merge || nil ))
+    buffer_size: (( merge || nil ))
+    tls:
+      client_cert: (( merge ))
+      client_key: (( merge ))
   nats:
     user: (( merge ))
     password: (( merge ))
     machines: (( merge ))
     port: (( merge ))
   system_domain: (( merge ))
+  app_domains: (( merge ))
   uaa:
     clients:
       ssh-proxy:

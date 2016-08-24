@@ -4,7 +4,7 @@ CONF_DIR=/var/vcap/jobs/vizzini/config
 
 set -e -x
 
-export GOROOT=$(readlink -nf /var/vcap/packages/golang_1.4)
+export GOROOT=$(readlink -nf /var/vcap/packages/golang)
 export PATH=${GOROOT}/bin:${PATH}
 
 export GOPATH=/var/vcap/packages/vizzini
@@ -19,8 +19,7 @@ EXITSTATUS=0
 <% if p("vizzini.bbs.require_ssl") %>
   bbs_sec_flags=" \
    --bbs-client-cert=${CONF_DIR}/certs/bbs/client.crt \
-   --bbs-client-key=${CONF_DIR}/certs/bbs/client.key \
-   --bbs-ca=${CONF_DIR}/certs/bbs/ca.crt"
+   --bbs-client-key=${CONF_DIR}/certs/bbs/client.key"
 
   bbs_api_url="<%= "https://" + p("vizzini.bbs.api_location") %>"
 <% else %>
@@ -31,11 +30,17 @@ EXITSTATUS=0
 nodes=<%= properties.vizzini.nodes %>
 verbose=<%= properties.vizzini.verbose %>
 routable_domain_suffix=<%= properties.vizzini.routable_domain_suffix %>
-consul_address=http://127.0.0.1:8500 
-
-go get -t -d -v ./...
+ssh_proxy_address=<%= properties.vizzini.ssh.proxy_address  %>
+<% if_p("vizzini.ssh.proxy_secret") do |proxy_secret| %>
+  ssh_proxy_secret_flag="--ssh-password=<%= proxy_secret %>"
+<% end %>
 
 go install github.com/onsi/ginkgo/ginkgo
+
+
+<% if_p("vizzini.eventually_timeout") do |eventually_timeout| %>
+  export DEFAULT_EVENTUALLY_TIMEOUT=<%= eventually_timeout %>
+<% end %>
 
 ginkgo \
   -nodes=${nodes} \
@@ -48,7 +53,8 @@ ginkgo \
   -- \
   ${bbs_sec_flags} \
   --bbs-address=${bbs_api_url} \
-  --consul-address=${consul_address} \
+  --ssh-address=${ssh_proxy_address} \
+  ${ssh_proxy_secret_flag} \
   --routable-domain-suffix=${routable_domain_suffix}
 
 echo "Vizzini Complete; exit status: $EXITSTATUS"

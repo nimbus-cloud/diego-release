@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e
+
+scripts_path=./$(dirname $0)
+eval $($scripts_path/get_paths.sh)
+
+cat > /tmp/diego_cats_integration_config.json <<EOF
+{
+  "api": "api.bosh-lite.com",
+  "admin_user": "admin",
+  "admin_password": "admin",
+  "apps_domain": "bosh-lite.com",
+  "skip_ssl_validation": true,
+  "use_http": true,
+  "backend": "diego"
+}
+EOF
+
+pushd ${CF_RELEASE_DIR}/src/github.com/cloudfoundry/cf-acceptance-tests/
+  CONFIG=/tmp/diego_cats_integration_config.json ./bin/diego_test_default -skip=NO_DIEGO_SUPPORT -nodes=4 "$@"
+popd
+
+

@@ -8,7 +8,11 @@ LOG_DIR=/var/vcap/sys/log/rep
 LOGFILE=$LOG_DIR/drain.log
 ADDRESS=<%= p("diego.rep.listen_addr").sub(/^0\.0\.0\.0:/, "localhost:") %>
 
+mkdir -p $LOG_DIR
+
 exec 3>&1
+
+source /var/vcap/packages/pid_utils/pid_utils.sh
 
 exec 1>> $LOGFILE
 exec 2>> $LOGFILE
@@ -29,6 +33,12 @@ fi
 
 pid=$(cat $PIDFILE)
 
+if [ ! -e /proc/$pid ]; then
+  echo "$(date): rep process not running"
+  echo 0 >&3
+  exit 0
+fi
+
 if evacuate; then
   echo "$(date): drain triggered"
 
@@ -37,6 +47,7 @@ if evacuate; then
     echo "$(date): waiting"
   done
 
+  kill_and_wait $PIDFILE
   echo "$(date): rep exited"
   echo 0 >&3
   exit 0

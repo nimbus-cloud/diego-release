@@ -3,7 +3,6 @@ name: file_server
 
 templates:
   file_server_ctl.erb: bin/file_server_ctl
-  dns_health_check.erb: bin/dns_health_check
 
 packages:
   - pid_utils
@@ -29,7 +28,6 @@ properties:
   diego.file_server.log_level:
     description: "Log level"
     default: "info"
-
-  diego.file_server.cc.external_port:
-    description: "External Cloud Controller port"
-    default: 9022
+  diego.file_server.dropsonde_port:
+    description: "local metron agent's port"
+    default: 3457

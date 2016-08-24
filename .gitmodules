@@ -1,7 +1,3 @@
-[submodule "src/github.com/cloudfoundry-incubator/diego-smoke-tests"]
-	path = src/github.com/cloudfoundry-incubator/diego-smoke-tests
-	url = https://github.com/cloudfoundry-incubator/diego-smoke-tests
-	branch = master
 [submodule "src/github.com/cloudfoundry-incubator/auction"]
 	path = src/github.com/cloudfoundry-incubator/auction
 	url = https://github.com/cloudfoundry-incubator/auction
@@ -101,10 +97,6 @@
 	path = src/github.com/cloudfoundry/storeadapter
 	url = https://github.com/cloudfoundry/storeadapter
 	branch = master
-[submodule "src/github.com/cloudfoundry-incubator/runtime-metrics-server"]
-	path = src/github.com/cloudfoundry-incubator/runtime-metrics-server
-	url = https://github.com/cloudfoundry-incubator/runtime-metrics-server
-	branch = master
 [submodule "src/github.com/cloudfoundry-incubator/route-emitter"]
 	path = src/github.com/cloudfoundry-incubator/route-emitter
 	url = https://github.com/cloudfoundry-incubator/route-emitter
@@ -148,10 +140,6 @@
 	path = src/github.com/coreos/etcd
 	url = https://github.com/coreos/etcd
 	branch = ssl-mutual-auth
-[submodule "src/github.com/cloudfoundry-incubator/diego-acceptance-tests"]
-	path = src/github.com/cloudfoundry-incubator/diego-acceptance-tests
-	url = https://github.com/cloudfoundry-incubator/diego-acceptance-tests
-	branch = master
 [submodule "src/github.com/vito/go-sse"]
 	path = src/github.com/vito/go-sse
 	url = https://github.com/vito/go-sse
@@ -215,10 +203,6 @@
 	path = src/github.com/kr/pty
 	url = https://github.com/kr/pty
 	branch = master
-[submodule "src/github.com/cloudfoundry-incubator/docker-registry-acceptance-tests"]
-	path = src/github.com/cloudfoundry-incubator/docker-registry-acceptance-tests
-	url = https://github.com/cloudfoundry-incubator/docker-registry-acceptance-tests
-	branch = master
 [submodule "src/github.com/cloudfoundry/noaa"]
 	path = src/github.com/cloudfoundry/noaa
 	url = https://github.com/cloudfoundry/noaa
@@ -245,10 +229,6 @@
 [submodule "src/github.com/cloudfoundry/sonde-go"]
 	path = src/github.com/cloudfoundry/sonde-go
 	url = https://github.com/cloudfoundry/sonde-go
-	branch = master
-[submodule "src/github.com/cloudfoundry/cli"]
-	path = src/github.com/cloudfoundry/cli
-	url = https://github.com/cloudfoundry/cli
 	branch = master
 [submodule "src/github.com/cloudfoundry-incubator/bbs"]
 	path = src/github.com/cloudfoundry-incubator/bbs
@@ -319,6 +299,26 @@
 [submodule "src/github.com/gorilla/context"]
 	path = src/github.com/gorilla/context
 	url = https://github.com/gorilla/context
+[submodule "src/github.com/cloudfoundry-incubator/routing-info"]
+	path = src/github.com/cloudfoundry-incubator/routing-info
+	url = https://github.com/cloudfoundry-incubator/routing-info
+[submodule "src/github.com/cloudfoundry-incubator/diego-upgrade-stability-tests"]
+	path = src/github.com/cloudfoundry-incubator/diego-upgrade-stability-tests
+	url = https://github.com/cloudfoundry-incubator/diego-upgrade-stability-tests
+	branch = master
+[submodule "src/github.com/kr/fs"]
+	path = src/github.com/kr/fs
+	url = https://github.com/kr/fs
+[submodule "src/github.com/pkg/sftp"]
+	path = src/github.com/pkg/sftp
+	url = https://github.com/pkg/sftp
+[submodule "src/github.com/cloudfoundry-incubator/volman"]
+	path = src/github.com/cloudfoundry-incubator/volman
+	url = https://github.com/cloudfoundry-incubator/volman
+	branch = master
+[submodule "src/github.com/go-sql-driver/mysql"]
+	path = src/github.com/go-sql-driver/mysql
+	url = https://github.com/go-sql-driver/mysql
 [submodule "src/gopkg.in/yaml.v2"]
 	path = src/gopkg.in/yaml.v2
 	url = https://gopkg.in/yaml.v2

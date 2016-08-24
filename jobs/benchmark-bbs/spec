@@ -1,12 +1,11 @@
 ---
 name: benchmark-bbs
 packages:
-  - golang_1.4
+  - golang
   - benchmark-bbs
 
 templates:
   run.erb: bin/run
-  dns_health_check.erb: bin/dns_health_check
   etcd_ca.crt.erb: config/certs/etcd/ca.crt
   etcd_client.crt.erb: config/certs/etcd/client.crt
   etcd_client.key.erb: config/certs/etcd/client.key
@@ -18,11 +17,17 @@ properties:
     description: "the number of single instance desired lrps to generate and fetch"
   benchmark-bbs.num_trials:
     description: "the number of trials of each benchmark to average across"
+  benchmark-bbs.num_reps:
+    description: "the number of rep processes to simulate in test"
+  benchmark-bbs.percent_writes:
+    description: "percentage of actual LRPs to write on each rep bulk loop"
+    default: 5
   benchmark-bbs.num_populate_workers:
     description: "the number of workers generating desired LRPs during setup"
 
   benchmark-bbs.bbs.api_location:
     description: "the address of the BBS"
+    default: "bbs.service.cf.internal:8889"
   benchmark-bbs.bbs.client_cert:
     description: "PEM-encoded client certificate"
   benchmark-bbs.bbs.client_key:
