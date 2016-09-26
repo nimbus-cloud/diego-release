@@ -1,6 +1,7 @@
 #!/bin/bash -l
 
 CONF_DIR=/var/vcap/jobs/vizzini/config
+LOG_DIR=/var/vcap/sys/log/vizzini
 
 set -e -x
 
@@ -12,7 +13,7 @@ export PATH=${GOPATH}/bin:${PATH}
 
 export CF_COLOR=false
 
-cd /var/vcap/packages/vizzini/src/github.com/cloudfoundry-incubator/vizzini
+cd /var/vcap/packages/vizzini/src/code.cloudfoundry.org/vizzini
 
 EXITSTATUS=0
 
@@ -42,6 +43,8 @@ go install github.com/onsi/ginkgo/ginkgo
   export DEFAULT_EVENTUALLY_TIMEOUT=<%= eventually_timeout %>
 <% end %>
 
+mkdir -p $LOG_DIR
+
 ginkgo \
   -nodes=${nodes} \
   -v=${verbose} \
@@ -55,7 +58,9 @@ ginkgo \
   --bbs-address=${bbs_api_url} \
   --ssh-address=${ssh_proxy_address} \
   ${ssh_proxy_secret_flag} \
-  --routable-domain-suffix=${routable_domain_suffix}
+  --routable-domain-suffix=${routable_domain_suffix} \
+  2> >(tee -a $LOG_DIR/vizzini.stderr.log) \
+  1> >(tee -a $LOG_DIR/vizzini.stdout.log)
 
 echo "Vizzini Complete; exit status: $EXITSTATUS"
 

@@ -3,26 +3,26 @@ name: rep
 
 templates:
   rep_ctl.erb: bin/rep_ctl
+  rep_as_vcap.erb: bin/rep_as_vcap
   drain.erb: bin/drain
   bbs_ca.crt.erb: config/certs/bbs/ca.crt
   trusted_certs.crt.erb: config/certs/rep/trusted_certs.crt
+  ca_certs_for_downloads.crt.erb: config/certs/rep/ca_certs_for_downloads.crt
   bbs_client.crt.erb: config/certs/bbs/client.crt
   bbs_client.key.erb: config/certs/bbs/client.key
+  post-start.erb: bin/post-start
 
 packages:
   - pid_utils
   - rep
 
 properties:
-  diego.rep.stack:
-    description: "The stack for which to handle requests"
-    default: "cflinuxfs2"
   diego.rep.listen_addr:
     description: "address to serve auction and LRP stop requests on"
     default: "0.0.0.0:1800"
   diego.rep.debug_addr:
     description: "address at which to serve debug info"
-    default: "0.0.0.0:17008"
+    default: "127.0.0.1:17008"
   diego.rep.polling_interval_in_seconds:
     description: "The interval to look for completed tasks and LRPs in seconds"
     default: 30
@@ -34,10 +34,11 @@ properties:
     default: 600
   diego.rep.zone:
     description: "The zone associated with the rep"
+  diego.rep.use_azure_fault_domains:
+    description: "Use Azure Fault-Domains to determine the value of the zone. The value of the zone will be z<FD-index>. e.g. z0, z1, etc."
+    default: false
   diego.rep.preloaded_rootfses:
     description: "Array of name:absolute_path pairs representing root filesystems preloaded onto the underlying garden"
-    default:
-      - cflinuxfs2:/var/vcap/packages/rootfs_cflinuxfs2/rootfs
   diego.rep.rootfs_providers:
     description: "Array of schemes for which the underlying garden can support arbitrary root filesystems"
     default:
@@ -49,12 +50,15 @@ properties:
     description: "local metron agent's port"
     default: 3457
   diego.rep.trusted_certs:
-    description: "Concatenation of trusted CA certificates to be made available on the cell."
+    description: "Concatenation of trusted CA certificates to be made available inside the rootfses"
     default: null
 
   diego.ssl.skip_cert_verify:
     description: "when connecting over https, ignore bad ssl certificates"
     default: false
+  diego.executor.ca_certs_for_downloads:
+    description: "Concatenation of trusted CA certificates to be used when downloading assets."
+    default: null
 
   diego.executor.memory_capacity_mb:
     description: "the memory capacity the executor should manage.  this should not be greater than the actual memory on the VM"
@@ -71,6 +75,8 @@ properties:
   diego.executor.container_inode_limit:
     description: "the inode limit enforced on each garden container."
     default: 200000
+  diego.executor.container_metrics_report_interval:
+    description: "the frequency for emitting container metrics"
   diego.executor.cache_path:
     description: "path to the executor's cache"
     default: "/var/vcap/data/executor_cache"
@@ -134,6 +140,9 @@ properties:
     description: "Experimental: arbitrary command to run after setup action"
   diego.executor.post_setup_user:
     description: "Experimental: user to run post setup hook command"
+  diego.executor.volman.driver_paths:
+    description: "Experimental: OS style path string containing the directories volman will look in for voldriver specs (delimited by : or ; depending on the OS)"
+    default: "/var/vcap/data/voldrivers"
 
   diego.rep.bbs.api_location:
     description: "Address to the BBS Server"

@@ -2,6 +2,7 @@
 name: ssh_proxy
 
 templates:
+  ssh_proxy_as_vcap.erb: bin/ssh_proxy_as_vcap
   ssh_proxy_ctl.erb: bin/ssh_proxy_ctl
   bbs_ca.crt.erb: config/certs/bbs/ca.crt
   bbs_client.crt.erb: config/certs/bbs/client.crt
@@ -31,7 +32,7 @@ properties:
     description: "Comma separated list of allowed key exchange algorithms"
   diego.ssh_proxy.debug_addr:
     description: "address at which to serve debug info"
-    default: "0.0.0.0:17016"
+    default: "127.0.0.1:17016"
   diego.ssh_proxy.log_level:
     description: "Log level"
     default: "info"

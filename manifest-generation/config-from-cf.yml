@@ -15,10 +15,11 @@ config_from_cf:
     agent_cert: (( merge ))
     agent_key: (( merge ))
     encrypt_keys: (( merge ))
-    require_ssl: (( merge ))
     server_cert: (( merge ))
     server_key: (( merge ))
   loggregator:
+    etcd_ca_cert: (( merge ))
+    etcd_require_ssl: (( merge ))
     etcd_machines: (( merge ))
     shared_secret: (( merge ))
     traffic_controller_url: (( merge ))
@@ -28,10 +29,14 @@ config_from_cf:
 
   metron_agent:
     dropsonde_incoming_port: (( merge ))
+    protocols: (( merge ))
     preferred_protocol: (( merge ))
     enable_buffer: (( merge ))
     buffer_size: (( merge ))
     tls:
+      client_cert: (( merge ))
+      client_key: (( merge ))
+    etcd:
       client_cert: (( merge ))
       client_key: (( merge ))
 
@@ -42,6 +47,7 @@ config_from_cf:
     password: (( merge ))
     port: (( merge ))
     machines: (( merge ))
+  syslog_daemon_config: (( merge ))
   uaa:
     ssh_proxy_client_secret: (( merge ))
     token_url: (( merge ))

@@ -5,7 +5,7 @@ resource_pools:
   stemcell: (( BoshInitStemcell ))
   cloud_properties:
     instance_type: m3.xlarge
-    ephemeral_disk: 
+    ephemeral_disk:
       size: 25_000
       type: gp2
     availability_zone: (( Resources.SubnetAvailabilityZone.BOSHZ1 ))
@@ -15,10 +15,10 @@ networks:
   type: manual
   subnets:
   - range: (( Resources.SubnetCIDR.BOSHZ1 ))
-    gateway: (( Resources.SubnetOctets.BOSHZ1.[2] ".1" )) 
+    gateway: (( Resources.SubnetOctets.BOSHZ1.[2] ".1" ))
     dns:
       - (( Resources.SubnetOctets.BOSHZ1.[2] ".2" ))
-    cloud_properties: 
+    cloud_properties:
       subnet: (( Resources.Subnet.BOSHZ1 ))
 - name: public
   type: vip
@@ -29,7 +29,6 @@ jobs:
 
   templates:
   - {name: nats, release: bosh}
-  - {name: redis, release: bosh}
   - {name: postgres, release: bosh}
   - {name: blobstore, release: bosh}
   - {name: director, release: bosh}
@@ -42,11 +41,11 @@ jobs:
 
   networks:
   - name: private
-    static_ips: 
+    static_ips:
       - (( Resources.SubnetOctets.BOSHZ1.[2] ".6" ))
     default: [dns, gateway]
   - name: public
-    static_ips: 
+    static_ips:
       - (( Resources.EIP.BoshInit ))
 
   properties:
@@ -54,11 +53,6 @@ jobs:
       address: 127.0.0.1
       user: nats
       password: nats-password
-
-    redis:
-      listen_addresss: 127.0.0.1
-      address: 127.0.0.1
-      password: redis-password
 
     postgres: &db
       host: 127.0.0.1

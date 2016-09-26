@@ -7,8 +7,8 @@ resource_pools: (( merge ))
 
 disk_pools:
 - name: disks
-  disk_size: 20_000
-  cloud_properties: 
+  disk_size: 100_000
+  cloud_properties:
     type: gp2
 
 networks: (( merge ))
@@ -16,7 +16,7 @@ networks: (( merge ))
 jobs: (( merge ))
 
 cloud_provider:
-  template: 
+  template:
     name: aws_cpi
     release: bosh-aws-cpi
 
@@ -26,7 +26,7 @@ cloud_provider:
     user: vcap
     private_key: ../../keypair/id_rsa_bosh
 
-  mbus: (( merge )) 
+  mbus: (( merge ))
 
   properties: (( merge ))
 
@@ -36,3 +36,9 @@ properties:
       provider: local
       local:
         users: (( merge ))
+
+  hm:
+    datadog:
+      api_key: (( merge || nil ))
+      application_key: (( merge || nil ))
+    datadog_enabled: (( merge || false ))

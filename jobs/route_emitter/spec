@@ -3,6 +3,7 @@ name: route_emitter
 
 templates:
   route_emitter_ctl.erb: bin/route_emitter_ctl
+  route_emitter_as_vcap.erb: bin/route_emitter_as_vcap
   bbs_ca.crt.erb: config/certs/bbs/ca.crt
   bbs_client.crt.erb: config/certs/bbs/client.crt
   bbs_client.key.erb: config/certs/bbs/client.key
@@ -24,7 +25,7 @@ properties:
 
   diego.route_emitter.debug_addr:
     description: "address at which to serve debug info"
-    default: "0.0.0.0:17009"
+    default: "127.0.0.1:17009"
   diego.route_emitter.sync_interval_in_seconds:
     description: "Interval to sync routes to the router in seconds."
     default: 60

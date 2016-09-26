@@ -1,6 +1,4 @@
 property_overrides:
-  converger:
-    log_level: debug
   etcd:
     require_ssl: true
     peer_require_ssl: true
@@ -233,6 +231,8 @@ property_overrides:
     encryption_keys:
       - label: key1
         passphrase: "a secure passphrase"
+    etcd:
+      machines: ["etcd.service.cf.internal"]
     require_ssl: true
     ca_cert: |
       -----BEGIN CERTIFICATE-----
@@ -384,6 +384,8 @@ property_overrides:
     listen_address: 0.0.0.0:7777
     log_level: debug
   nsync:
+    log_level: debug
+  stager:
     log_level: debug
   rep:
     evacuation_timeout_in_seconds: 60

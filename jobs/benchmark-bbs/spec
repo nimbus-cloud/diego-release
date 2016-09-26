@@ -24,6 +24,9 @@ properties:
     default: 5
   benchmark-bbs.num_populate_workers:
     description: "the number of workers generating desired LRPs during setup"
+  benchmark-bbs.ginkgo_nodes:
+    description: "number of parallel ginkgo nodes to run"
+    default: 4
 
   benchmark-bbs.bbs.api_location:
     description: "the address of the BBS"
@@ -37,6 +40,9 @@ properties:
   benchmark-bbs.bbs.require_ssl:
     description: "enable ssl for all communication with the bbs (false unsupported)"
     default: true
+
+  benchmark-bbs.sql.db_connection_string:
+    description: "Connection string to use for SQL backend [username:password@tcp(1.1.1.1:1234)/database]"
 
   benchmark-bbs.etcd.machines:
     description: "Addresses pointing to the ETCD cluster"

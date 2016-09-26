@@ -5,11 +5,16 @@ set -e
 scripts_path=./$(dirname $0)
 eval $($scripts_path/get_paths.sh)
 
-pushd $DIEGO_RELEASE_DIR/src/github.com/cloudfoundry-incubator/inigo
-  for pkg in `find . -type d ! -path . -maxdepth 1`; do
+echo "checking code for compilation errors..."
+
+pushd $DIEGO_RELEASE_DIR/src/code.cloudfoundry.org/inigo > /dev/null
+  for pkg in `find . -maxdepth 1 -type d ! -path . -not -path '*/\.*'`; do
+    echo $pkg
     go test -c ./${pkg} > /dev/null
   done
-popd
+popd > /dev/null
+
+echo "compilation done"
 
 if [ -n "${DIEGO_CI_TARGET}" ]; then
   target="-t ${DIEGO_CI_TARGET}"
@@ -17,10 +22,16 @@ else
   target="-t local"
 fi
 
-if [ -z "${RUN_VOLMAN}" ]; then
-  export SKIP_PACKAGES="volman"
+if [ -z "${USE_GARDEN_RUNC}" ]; then
+  fly ${target} execute -p -x \
+    -c $DIEGO_RELEASE_DIR/scripts/ci/run_inigo_glinux.build.yml \
+    -i diego-release=$PWD \
+    -i garden-linux-release=$HOME/workspace/garden-linux-release \
+    -- "$@"
 else
-  export SKIP_REGEX="SSH"
+  fly ${target} execute -p -x \
+    -c $DIEGO_RELEASE_DIR/scripts/ci/run_inigo_grunc.build.yml \
+    -i diego-release=$PWD \
+    -i garden-runc-release=$HOME/workspace/garden-runc-release \
+    -- "$@"
 fi
-
-fly ${target} execute -p -x -c $DIEGO_RELEASE_DIR/scripts/ci/run_inigo.build.yml -i diego-release=$PWD -i garden-linux-release=$HOME/workspace/garden-linux-release -- "$@"

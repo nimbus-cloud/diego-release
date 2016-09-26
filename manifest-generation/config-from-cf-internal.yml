@@ -15,11 +15,12 @@ config_from_cf:
     agent_cert: (( properties.consul.agent_cert ))
     agent_key: (( properties.consul.agent_key ))
     encrypt_keys: (( properties.consul.encrypt_keys ))
-    require_ssl: (( properties.consul.require_ssl ))
     server_cert: (( properties.consul.server_cert ))
     server_key: (( properties.consul.server_key ))
   loggregator:
     etcd_machines: (( properties.loggregator.etcd.machines ))
+    etcd_require_ssl: (( properties.loggregator.etcd.require_ssl ))
+    etcd_ca_cert: (( properties.loggregator.etcd.ca_cert ))
     shared_secret: (( properties.loggregator_endpoint.shared_secret ))
     traffic_controller_url: (( "wss://doppler." properties.system_domain ":443" ))
     dropsonde_incoming_port: (( properties.loggregator.dropsonde_incoming_port ))
@@ -29,17 +30,22 @@ config_from_cf:
     shared_secret: (( properties.metron_endpoint.shared_secret ))
   metron_agent:
     dropsonde_incoming_port: (( properties.metron_agent.dropsonde_incoming_port ))
+    protocols: (( properties.metron_agent.protocols ))
     preferred_protocol: (( properties.metron_agent.preferred_protocol ))
     enable_buffer: (( properties.metron_agent.enable_buffer ))
     buffer_size: (( properties.metron_agent.buffer_size ))
     tls:
       client_cert: (( properties.metron_agent.tls.client_cert ))
       client_key: (( properties.metron_agent.tls.client_key ))
+    etcd:
+      client_cert: (( properties.metron_agent.etcd.client_cert ))
+      client_key: (( properties.metron_agent.etcd.client_key ))
   nats:
     user: (( properties.nats.user ))
     password: (( properties.nats.password ))
     port: (( properties.nats.port ))
     machines: (( properties.nats.machines ))
+  syslog_daemon_config: (( properties.syslog_daemon_config ))
   uaa:
     ssh_proxy_client_secret: (( properties.uaa.clients.ssh-proxy.secret ))
     token_url: (( properties.uaa.url "/oauth/token" ))
@@ -61,37 +67,44 @@ properties:
       datacenter: (( merge || nil ))
       servers:
         lan: (( merge ))
-    ca_cert: (( merge || nil ))
-    agent_cert: (( merge || nil ))
-    agent_key: (( merge || nil ))
-    encrypt_keys: (( merge || nil ))
-    require_ssl: (( merge || nil ))
-    server_cert: (( merge || nil ))
-    server_key: (( merge || nil ))
+    ca_cert: (( merge ))
+    agent_cert: (( merge ))
+    agent_key: (( merge ))
+    encrypt_keys: (( merge ))
+    server_cert: (( merge ))
+    server_key: (( merge ))
   loggregator:
     etcd:
+      ca_cert: null
+      require_ssl: null
       machines: (( merge ))
     dropsonde_incoming_port: (( merge || nil ))
     tls:
-      ca_cert: (( merge ))
+      ca_cert: (( merge || nil ))
   loggregator_endpoint:
     shared_secret: (( merge ))
   metron_endpoint:
     shared_secret: (( merge ))
   metron_agent:
     dropsonde_incoming_port: (( merge || nil ))
-    preferred_protocol: (( merge ))
+    protocols: (( merge || nil ))
+    preferred_protocol: (( merge || nil ))
     enable_buffer: (( merge || nil ))
     buffer_size: (( merge || nil ))
     tls:
-      client_cert: (( merge ))
-      client_key: (( merge ))
+      client_cert: (( merge || nil ))
+      client_key: (( merge || nil ))
+    etcd:
+      client_cert: null
+      client_key: null
+
   nats:
     user: (( merge ))
     password: (( merge ))
     machines: (( merge ))
     port: (( merge ))
   system_domain: (( merge ))
+  syslog_daemon_config: (( merge || nil ))
   app_domains: (( merge ))
   uaa:
     clients:

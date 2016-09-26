@@ -1,12 +1,10 @@
-
-
 # Contributing to Diego
 
 The Diego team uses GitHub and accepts contributions via [pull request](https://help.github.com/articles/using-pull-requests).
 
 The `diego-release` repository is a [BOSH](https://github.com/cloudfoundry/bosh) release for Diego. The root of this repository doubles as a Golang [`GOPATH`](https://golang.org/doc/code.html#GOPATH). For more information about configuring your Golang environment and automatically setting your `GOPATH` to the release directory, see the [instructions below](#initial-setup).
 
-All Diego components are submodules in diego-release and can be found in the [`src/github.com/cloudfoundry-incubator`](https://github.com/cloudfoundry-incubator/diego-release/tree/master/src/github.com/cloudfoundry-incubator) and [`src/github.com/cloudfoundry`](https://github.com/cloudfoundry-incubator/diego-release/tree/master/src/github.com/cloudfoundry) directories of this repository.
+All Diego components are submodules in diego-release and can be found in the [`src/github.com/cloudfoundry`](https://github.com/cloudfoundry/diego-release/tree/master/src/github.com/cloudfoundry) and [`src/github.com/cloudfoundry-incubator`](https://github.com/cloudfoundry/diego-release/tree/master/src/github.com/cloudfoundry-incubator) directories of this repository.
 
 If you wish to make a change to an individual Diego component, submit a pull request to the master branches of its repository. Once accepted, those changes should make their way into `diego-release`.
 
@@ -75,7 +73,7 @@ This BOSH release doubles as a `$GOPATH`. It will automatically be set up for yo
     popd
 
     # clone diego-release
-    git clone https://github.com/cloudfoundry-incubator/diego-release.git
+    git clone https://github.com/cloudfoundry/diego-release.git
     pushd diego-release/
 
     # automate $GOPATH and $PATH setup
@@ -106,44 +104,88 @@ To be able to run unit tests, you'll also need to install the following binaries
 
     # Install consul
     if uname -a | grep Darwin; then os=darwin; else os=linux; fi
-    curl -L -o $TMPDIR/consul-0.5.2.zip "https://releases.hashicorp.com/consul/0.5.2/consul_0.5.2_${os}_amd64.zip"
-    unzip $TMPDIR/consul-0.5.2.zip -d $GOPATH/bin
-    rm $TMPDIR/consul-0.5.2.zip
+    curl -L -o $TMPDIR/consul-0.6.4.zip "https://releases.hashicorp.com/consul/0.6.4/consul_0.6.4_${os}_amd64.zip"
+    unzip $TMPDIR/consul-0.6.4.zip -d $GOPATH/bin
+    rm $TMPDIR/consul-0.6.4.zip
 
 To be able to run the integration test suite ("inigo"), you'll need to have a local [Concourse](http://concourse.ci) VM. Follow the instructions on the Concourse [README](https://github.com/concourse/concourse/blob/master/README.md) to set it up locally using [vagrant](https://www.vagrantup.com/). Download the fly CLI as instructed and move it somewhere visible to your `$PATH`.
 
-### Running the experimental SQL unit tests
-To run the experimental SQL unit tests, you'll need mysql running locally with the correct sql_mode and user configuration.
+### Running the SQL unit tests
 
-On OS X, you can follow the these steps to install and configure mysql:
+To run the SQL unit tests locally requires running MySQL and Postgres with the correct configuration.
 
-1. `brew install mysql`
-2. `mysql.server start`
-3. Run `mysql_secure_installation` and set a root password
-    - Follow the on-screen prompts to complete the installation. The answers won't affect whether the unit tests can run.
+On OS X, follow these steps to install and configure MySQL and Postgres:
+
+1. Install MySQL:
+
+        brew install mysql
+
+2. Start MySQL:
+
+        mysql.server start
+
+3. Set a root password:
+
+        mysql_secure_installation
+
+   Follow the on-screen prompts to complete the installation. The answers will not affect whether the unit tests can run.
+
 4. Create /etc/my.cnf with the following contents:
 
-    ```
-[mysqld]
-sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
-    ```
-5. `mysql.server restart`
-6. Log in to the mysql console as root, using the password you specified in step 3
+        [mysqld]
+        sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
 
-    ```
-mysql -uroot -p<your password>
-    ```
+5. Restart MySQL:
+
+        mysql.server restart
+
+6. Log in to the mysql console as root, using the password you specified in step 3:
+
+        mysql -uroot -p<your password>
+
 7. Run the following SQL commands to create a diego user with the correct permissions:
 
-    ```
-CREATE USER 'diego'@'localhost' IDENTIFIED BY 'diego_password';
-GRANT ALL PRIVILEGES ON `diego\_%`.* TO 'diego'@'localhost';
-    ```
-8. You should now be able to run the SQL unit tests. To run the tests, run the following command from the bbs submodule:
+        CREATE USER 'diego'@'localhost' IDENTIFIED BY 'diego_password';
+        GRANT ALL PRIVILEGES ON `diego\_%`.* TO 'diego'@'localhost';
 
-    ```
-ginkgo -p db/sqldb
-    ```
+8. Install Postgres:
+
+        brew install postgresql
+
+   By default, brew installs Postgres to use `/usr/local/var/postgres` as its
+   data directory, and the instructions below assume that.
+
+9. Create a self-signed certificate as described in the [PostgreSQL documentation](https://www.postgresql.org/docs/9.4/static/ssl-tcp.html#SSL-CERTIFICATE-CREATION). 
+   Save the certificate and key to a local directory of your choosing.
+
+10. Edit the `/usr/local/var/postgres/postgres.conf` file to set `ssl = on` and to refer to the certificate and key created above. For example:
+
+        ssl = on
+        ssl_cert_file = '/path/to/server.crt'
+        ssl_key_file = '/path/to/server.key'
+        # Other SSL params can be left commented out
+
+11. Run postgres in daemon mode:
+
+        pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start
+
+12. Create the diego database:
+
+        createdb diego
+
+13. Create the diego user. When prompted for the password, enter 'diego_pw'.
+
+        createuser -d -P -r -s diego
+
+14. You should now be able to run the SQL unit tests. To run all the SQL-backed
+    tests, run the following command from
+    the root of diego-release:
+
+        RUN_SQL_TESTS=true ./scripts/run-unit-tests
+
+   This command will run all regular unit tests, as well as BBS and component
+   integration tests where a backing store is required in both etcd-backed,
+   MySQL-backed, and Postgres-backed modes.
 
 ## <a name="deploy-bosh-lite"></a> Deploying Diego to BOSH-Lite
 
@@ -162,13 +204,13 @@ ginkgo -p db/sqldb
         cd ~/workspace
         git clone https://github.com/cloudfoundry/cf-release.git
         cd ~/workspace/cf-release
-        git checkout runtime-passed
+        git checkout release-candidate
         ./scripts/update
 
 1. Check out diego-release (develop branch) from git:
 
         cd ~/workspace
-        git clone https://github.com/cloudfoundry-incubator/diego-release.git
+        git clone https://github.com/cloudfoundry/diego-release.git
         cd ~/workspace/diego-release
         git checkout develop
         ./scripts/update
@@ -190,7 +232,7 @@ ginkgo -p db/sqldb
 1. Generate the Diego manifests:
 
         cd ~/workspace/diego-release
-        ./scripts/generate-bosh-lite-manifests
+        ./scripts/generate-bosh-lite-manifests # specify [-g] for garden-runc-release
 
 1. Create, upload, and deploy the CF release:
 
@@ -200,9 +242,12 @@ ginkgo -p db/sqldb
         bosh -n upload release &&
         bosh -n deploy
 
-1. Upload the latest garden-linux-release:
+1. Upload the latest garden-linux-release OR garden-runc-release:
 
         bosh upload release https://bosh.io/d/github.com/cloudfoundry-incubator/garden-linux-release
+
+        # if you specified [-g] when you generated your manifest:
+        # bosh upload release https://bosh.io/d/github.com/cloudfoundry-incubator/garden-runc-release
 
 1. Upload the latest etcd-release:
 
@@ -243,7 +288,7 @@ If you're introducing a new component (e.g. a new job/errand) or changing the ma
 
 ## Logging in Diego
 
-Please follow logging conventions as outlined [here](https://github.com/cloudfoundry-incubator/diego-dev-notes/blob/master/notes/logging-guidance.md).
+Please follow logging conventions as outlined [here](https://github.com/cloudfoundry/diego-dev-notes/blob/master/notes/logging-guidance.md).
 
 
 ## Testing Diego
@@ -252,7 +297,6 @@ Please follow logging conventions as outlined [here](https://github.com/cloudfou
 Once you've followed the steps [above](#initial-setup) to install ginkgo and the other binaries needed for testing, execute the following script to run all unit tests in diego-release.
 
     ./scripts/run-unit-tests
-
 
 ### Running Integration Tests
 

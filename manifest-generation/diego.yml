@@ -1,11 +1,11 @@
 name: (( config_from_cf.cf_deployment_name "-diego" ))
 
-releases: (( base_releases [config_from_cf.cf_release] ))
+releases: (( base_releases bbs_overrides.releases volman_overrides.releases [garden_overrides.release] [config_from_cf.cf_release] bridge_overrides.releases ))
 
 director_uuid: (( config_from_cf.cf_director_uuid ))
 
 compilation:
-  workers: 6
+  workers: (( iaas_settings.compilation_workers || 6 ))
   network: diego1
   reuse_compilation_vms: true
   cloud_properties: (( iaas_settings.compilation_cloud_properties ))
@@ -23,10 +23,10 @@ networks:
     subnets: (( iaas_settings.subnet_configs.diego1.subnets ))
   - name: diego2
     type: manual
-    subnets: (( iaas_settings.subnet_configs.diego2.subnets ))
+    subnets: (( iaas_settings.subnet_configs.diego2.subnets || [] ))
   - name: diego3
     type: manual
-    subnets: (( iaas_settings.subnet_configs.diego3.subnets ))
+    subnets: (( iaas_settings.subnet_configs.diego3.subnets || [] ))
 
 disk_pools:
   - name: database_disks
@@ -41,11 +41,11 @@ resource_pools:
   - name: access_z2
     network: diego2
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.access_z2.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.access_z2.cloud_properties || empty_hash ))
   - name: access_z3
     network: diego3
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.access_z3.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.access_z3.cloud_properties || empty_hash ))
   - name: brain_z1
     network: diego1
     stemcell: (( iaas_settings.stemcell ))
@@ -53,11 +53,11 @@ resource_pools:
   - name: brain_z2
     network: diego2
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.brain_z2.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.brain_z2.cloud_properties || empty_hash ))
   - name: brain_z3
     network: diego3
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.brain_z3.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.brain_z3.cloud_properties || empty_hash ))
   - name: cc_bridge_z1
     network: diego1
     stemcell: (( iaas_settings.stemcell ))
@@ -65,11 +65,11 @@ resource_pools:
   - name: cc_bridge_z2
     network: diego2
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cc_bridge_z2.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cc_bridge_z2.cloud_properties || empty_hash ))
   - name: cc_bridge_z3
     network: diego3
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cc_bridge_z3.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cc_bridge_z3.cloud_properties || empty_hash ))
   - name: cell_z1
     network: diego1
     stemcell: (( iaas_settings.stemcell ))
@@ -77,11 +77,11 @@ resource_pools:
   - name: cell_z2
     network: diego2
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cell_z2.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cell_z2.cloud_properties || empty_hash ))
   - name: cell_z3
     network: diego3
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cell_z3.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.cell_z3.cloud_properties || empty_hash ))
   - name: database_z1
     network: diego1
     stemcell: (( iaas_settings.stemcell ))
@@ -89,11 +89,11 @@ resource_pools:
   - name: database_z2
     network: diego2
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.database_z2.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.database_z2.cloud_properties || empty_hash ))
   - name: database_z3
     network: diego3
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.database_z3.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.database_z3.cloud_properties || empty_hash ))
   - name: route_emitter_z1
     network: diego1
     stemcell: (( iaas_settings.stemcell ))
@@ -101,11 +101,11 @@ resource_pools:
   - name: route_emitter_z2
     network: diego2
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.route_emitter_z2.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.route_emitter_z2.cloud_properties || empty_hash ))
   - name: route_emitter_z3
     network: diego3
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.route_emitter_z3.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.route_emitter_z3.cloud_properties || empty_hash ))
   - name: colocated_z1
     network: diego1
     stemcell: (( iaas_settings.stemcell ))
@@ -113,15 +113,15 @@ resource_pools:
   - name: colocated_z2
     network: diego2
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.colocated_z2.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.colocated_z2.cloud_properties || empty_hash ))
   - name: colocated_z3
     network: diego3
     stemcell: (( iaas_settings.stemcell ))
-    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.colocated_z3.cloud_properties ))
+    cloud_properties: (( iaas_settings.resource_pool_cloud_properties.colocated_z3.cloud_properties || empty_hash ))
 
 jobs:
   - name: database_z1
-    templates: (( base_job_templates.database ))
+    templates: (( bbs_overrides.job_templates ))
     instances: (( instance_count_overrides.database_z1.instances || 1 ))
     persistent_disk_pool: database_disks
     resource_pool: database_z1
@@ -131,15 +131,12 @@ jobs:
       serial: true
       max_in_flight: 1
     properties:
-      consul:
-        agent:
-          services:
-            etcd: {}
+      consul: (( bbs_overrides.job_properties.consul ))
       metron_agent:
         zone: z1
 
   - name: database_z2
-    templates: (( base_job_templates.database ))
+    templates: (( bbs_overrides.job_templates ))
     instances: (( instance_count_overrides.database_z2.instances || 1 ))
     persistent_disk_pool: database_disks
     resource_pool: database_z2
@@ -149,15 +146,12 @@ jobs:
       serial: true
       max_in_flight: 1
     properties:
-      consul:
-        agent:
-          services:
-            etcd: {}
+      consul: (( bbs_overrides.job_properties.consul ))
       metron_agent:
         zone: z2
 
   - name: database_z3
-    templates: (( base_job_templates.database ))
+    templates: (( bbs_overrides.job_templates ))
     instances: (( instance_count_overrides.database_z3.instances || 1 ))
     persistent_disk_pool: database_disks
     resource_pool: database_z3
@@ -167,10 +161,7 @@ jobs:
       serial: true
       max_in_flight: 1
     properties:
-      consul:
-        agent:
-          services:
-            etcd: {}
+      consul: (( bbs_overrides.job_properties.consul ))
       metron_agent:
         zone: z3
 
@@ -188,7 +179,7 @@ jobs:
         zone: z1
 
   - name: cell_z1
-    templates: (( base_job_templates.cell ))
+    templates: (( base_job_templates.cell volman_overrides.driver_templates ))
     instances: (( instance_count_overrides.cell_z1.instances || 1 ))
     resource_pool: cell_z1
     networks:
@@ -201,7 +192,8 @@ jobs:
         zone: z1
       diego:
         rep:
-          zone: z1
+          use_azure_fault_domains: (( property_overrides.cell_z1.use_azure_fault_domains || nil ))
+          zone: (( property_overrides.cell_z1.zone || "z1" ))
 
   - name: cc_bridge_z1
     templates: (( base_job_templates.cc_bridge ))
@@ -256,7 +248,7 @@ jobs:
         zone: z2
 
   - name: cell_z2
-    templates: (( base_job_templates.cell ))
+    templates: (( base_job_templates.cell volman_overrides.driver_templates ))
     instances: (( instance_count_overrides.cell_z2.instances || 1 ))
     resource_pool: cell_z2
     networks:
@@ -269,7 +261,8 @@ jobs:
         zone: z2
       diego:
         rep:
-          zone: z2
+          use_azure_fault_domains: (( property_overrides.cell_z2.use_azure_fault_domains || nil ))
+          zone: (( property_overrides.cell_z2.zone || "z2" ))
 
   - name: cc_bridge_z2
     templates: (( base_job_templates.cc_bridge ))
@@ -324,7 +317,7 @@ jobs:
         zone: z3
 
   - name: cell_z3
-    templates: (( base_job_templates.cell ))
+    templates: (( base_job_templates.cell volman_overrides.driver_templates ))
     instances: (( instance_count_overrides.cell_z3.instances || 0 ))
     resource_pool: cell_z3
     networks:
@@ -337,7 +330,8 @@ jobs:
         zone: z3
       diego:
         rep:
-          zone: z3
+          use_azure_fault_domains: (( property_overrides.cell_z3.use_azure_fault_domains || nil ))
+          zone: (( property_overrides.cell_z3.zone || "z3" ))
 
   - name: cc_bridge_z3
     templates: (( base_job_templates.cc_bridge ))
@@ -379,7 +373,7 @@ jobs:
         zone: z3
 
   - name: colocated_z1
-    templates: (( base_job_templates.colocated ))
+    templates: (( base_job_templates.colocated bbs_overrides.job_templates ))
     instances: (( instance_count_overrides.colocated_z1.instances || 0 ))
     persistent_disk_pool: database_disks
     resource_pool: colocated_z1
@@ -389,10 +383,7 @@ jobs:
       serial: true
       max_in_flight: 1
     properties:
-      consul:
-        agent:
-          services:
-            etcd: {}
+      consul: (( bbs_overrides.job_properties.consul ))
       diego:
         rep:
           zone: z1
@@ -400,7 +391,7 @@ jobs:
         zone: z1
 
   - name: colocated_z2
-    templates: (( base_job_templates.colocated ))
+    templates: (( base_job_templates.colocated bbs_overrides.job_templates ))
     instances: (( instance_count_overrides.colocated_z2.instances || 0 ))
     persistent_disk_pool: database_disks
     resource_pool: colocated_z2
@@ -410,10 +401,7 @@ jobs:
       serial: true
       max_in_flight: 1
     properties:
-      consul:
-        agent:
-          services:
-            etcd: {}
+      consul: (( bbs_overrides.job_properties.consul ))
       diego:
         rep:
           zone: z2
@@ -421,7 +409,7 @@ jobs:
         zone: z2
 
   - name: colocated_z3
-    templates: (( base_job_templates.colocated ))
+    templates: (( base_job_templates.colocated bbs_overrides.job_templates ))
     instances: (( instance_count_overrides.colocated_z3.instances || 0 ))
     persistent_disk_pool: database_disks
     resource_pool: colocated_z3
@@ -431,10 +419,7 @@ jobs:
       serial: true
       max_in_flight: 1
     properties:
-      consul:
-        agent:
-          services:
-            etcd: {}
+      consul: (( bbs_overrides.job_properties.consul ))
       diego:
         rep:
           zone: z3
@@ -445,24 +430,28 @@ properties:
   # -- Properties below are used by the metron_agent job from cf-release --
   metron_agent:
     deployment: (( name ))
+    protocols: (( config_from_cf.metron_agent.protocols ))
     preferred_protocol: (( config_from_cf.metron_agent.preferred_protocol ))
     enable_buffer: (( config_from_cf.metron_agent.enable_buffer ))
     buffer_size: (( config_from_cf.metron_agent.buffer_size ))
     tls:
       client_cert: (( config_from_cf.metron_agent.tls.client_cert ))
       client_key: (( config_from_cf.metron_agent.tls.client_key ))
+    etcd:
+      client_cert: (( config_from_cf.metron_agent.etcd.client_cert ))
+      client_key: (( config_from_cf.metron_agent.etcd.client_key ))
     dropsonde_incoming_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
   loggregator:
     etcd:
+      require_ssl: (( config_from_cf.loggregator.etcd_require_ssl ))
+      ca_cert: (( config_from_cf.loggregator.etcd_ca_cert ))
       machines: (( config_from_cf.loggregator.etcd_machines ))
     dropsonde_incoming_port: (( config_from_cf.loggregator.dropsonde_incoming_port ))
     tls:
       ca_cert: (( config_from_cf.loggregator.tls.ca_cert ))
   metron_endpoint:
     shared_secret: (( config_from_cf.metron_endpoint.shared_secret ))
-  syslog_daemon_config:
-    address: (( property_overrides.syslog_daemon_config.address || nil ))
-    port: (( property_overrides.syslog_daemon_config.port || nil ))
+  syslog_daemon_config: (( config_from_cf.syslog_daemon_config ))
 
   # -- Properties below are used by the consul_agent job from cf-release --
   consul:
@@ -476,44 +465,16 @@ properties:
     agent_cert: (( config_from_cf.consul.agent_cert ))
     agent_key: (( config_from_cf.consul.agent_key ))
     encrypt_keys: (( config_from_cf.consul.encrypt_keys ))
-    require_ssl: (( config_from_cf.consul.require_ssl ))
     server_cert: (( config_from_cf.consul.server_cert ))
     server_key: (( config_from_cf.consul.server_key ))
 
   # -- Properties below are used by the etcd from etcd-release --
-  etcd:
-    machines: ["etcd.service.cf.internal"]
-    advertise_urls_dns_suffix: "etcd.service.cf.internal"
-    cluster:
-      - name: "database_z1"
-        instances: (( instance_count_overrides.database_z1.instances || 1 ))
-      - name: "database_z2"
-        instances: (( instance_count_overrides.database_z2.instances || 1 ))
-      - name: "database_z3"
-        instances: (( instance_count_overrides.database_z3.instances || 1 ))
-      - name: "colocated_z1"
-        instances: (( instance_count_overrides.colocated_z1.instances || 0 ))
-      - name: "colocated_z2"
-        instances: (( instance_count_overrides.colocated_z2.instances || 0 ))
-      - name: "colocated_z2"
-        instances: (( instance_count_overrides.colocated_z2.instances || 0 ))
-    require_ssl: (( property_overrides.etcd.require_ssl || nil ))
-    ca_cert: (( property_overrides.etcd.ca_cert || nil ))
-    server_cert: (( property_overrides.etcd.server_cert || nil ))
-    server_key: (( property_overrides.etcd.server_key || nil ))
-    client_cert: (( property_overrides.etcd.client_cert || nil ))
-    client_key: (( property_overrides.etcd.client_key || nil ))
-    peer_require_ssl: (( property_overrides.etcd.peer_require_ssl || nil ))
-    peer_ca_cert: (( property_overrides.etcd.peer_ca_cert || nil ))
-    peer_cert: (( property_overrides.etcd.peer_cert || nil ))
-    peer_key: (( property_overrides.etcd.peer_key || nil ))
-    heartbeat_interval_in_milliseconds: (( property_overrides.etcd.heartbeat_interval_in_milliseconds || nil ))
-    election_timeout_in_milliseconds: (( property_overrides.etcd.election_timeout_in_milliseconds || nil ))
+  etcd: (( bbs_overrides.etcd_properties ))
 
   cflinuxfs2-rootfs:
     trusted_certs: (( property_overrides.rootfs_cflinuxfs2.trusted_certs || nil ))
 
-  # -- Properties below are used by the jobs from diego- release --
+  # -- Properties below are used by the jobs from diego-release --
   diego:
     # -- Global property --
     ssl:
@@ -533,6 +494,12 @@ properties:
       starting_container_weight: (( property_overrides.auctioneer.starting_container_weight || nil ))
       dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
       log_level: (( property_overrides.auctioneer.log_level || nil ))
+    cfdot:
+      bbs:
+        use_ssl: (( property_overrides.bbs.require_ssl || nil ))
+        ca_cert: (( property_overrides.bbs.ca_cert ))
+        client_cert: (( property_overrides.bbs.client_cert ))
+        client_key: (( property_overrides.bbs.client_key ))
     bbs:
       active_key_label: (( property_overrides.bbs.active_key_label || nil ))
       encryption_keys: (( property_overrides.bbs.encryption_keys || nil ))
@@ -543,28 +510,22 @@ properties:
       dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
       auctioneer:
         api_url: (( property_overrides.bbs.auctioneer.api_url || nil ))
-      etcd:
-        machines: (( property_overrides.etcd_machines || nil ))
-        require_ssl: (( property_overrides.etcd.require_ssl || nil ))
-        ca_cert: (( property_overrides.etcd.ca_cert ))
-        client_cert: (( property_overrides.etcd.client_cert ))
-        client_key: (( property_overrides.etcd.client_key ))
-        client_session_cache_size: (( property_overrides.etcd.client_session_cache_size || nil ))
-        max_idle_conns_per_host: (( property_overrides.etcd.max_idle_conns_per_host || nil ))
+      etcd: (( bbs_overrides.bbs_properties.etcd ))
+      sql:
+        db_connection_string: (( sql_overrides.bbs.db_connection_string || nil ))
+        db_driver: (( sql_overrides.bbs.db_driver || nil ))
+        max_open_connections: (( sql_overrides.bbs.max_open_connections || nil ))
+        require_ssl: (( sql_overrides.bbs.require_ssl || nil ))
+        ca_cert: (( sql_overrides.bbs.ca_cert || nil ))
       log_level: (( property_overrides.bbs.log_level || nil ))
-    converger:
-      dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
-      bbs:
-        api_location: (( property_overrides.bbs.api_location || nil ))
-        ca_cert: (( property_overrides.bbs.ca_cert ))
-        client_cert: (( property_overrides.bbs.client_cert ))
-        client_key: (( property_overrides.bbs.client_key ))
-        require_ssl: (( property_overrides.bbs.require_ssl || nil ))
-        client_session_cache_size: (( property_overrides.bbs.client_session_cache_size || nil ))
-        max_idle_conns_per_host: (( property_overrides.bbs.max_idle_conns_per_host || nil ))
-      log_level: (( property_overrides.converger.log_level || nil ))
+      convergence:
+        repeat_interval_in_seconds: (( property_overrides.bbs.convergence.repeat_interval_in_seconds || nil ))
+        kick_task_duration_in_seconds: (( property_overrides.bbs.convergence.kick_task_duration_in_seconds || nil ))
+        expire_completed_task_duration_in_seconds: (( property_overrides.bbs.convergence.expire_completed_task_duration_in_seconds || nil ))
+        expire_pending_task_duration_in_seconds: (( property_overrides.bbs.convergence.expire_pending_task_duration_in_seconds || nil ))
     executor:
       disk_capacity_mb: (( property_overrides.executor.disk_capacity_mb || nil ))
+      max_cache_size_in_bytes: (( property_overrides.executor.max_cache_size_in_bytes || nil ))
       memory_capacity_mb: (( property_overrides.executor.memory_capacity_mb || nil ))
       drain_timeout_in_seconds: (( property_overrides.executor.drain_timeout_in_seconds || nil ))
       post_setup_hook: (( property_overrides.executor.post_setup_hook || nil ))
@@ -582,30 +543,14 @@ properties:
           dir: (( property_overrides.executor.garden_healthcheck.process.dir || nil ))
           args: (( property_overrides.executor.garden_healthcheck.process.args || nil ))
           env: (( property_overrides.executor.garden_healthcheck.process.env || nil ))
+      ca_certs_for_downloads: (( property_overrides.executor.ca_certs_for_downloads || nil ))
       log_level: (( property_overrides.executor.log_level || nil ))
+      container_metrics_report_interval: (( property_overrides.executor.container_metrics_report_interval || nil ))
     file_server:
       dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
       log_level: (( property_overrides.file_server.log_level || nil ))
-    cc_uploader:
-      dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
-      log_level: (( property_overrides.cc_uploader.log_level || nil ))
-    nsync:
-      dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
-      bbs:
-        api_location: (( property_overrides.bbs.api_location || nil ))
-        ca_cert: (( property_overrides.bbs.ca_cert ))
-        client_cert: (( property_overrides.bbs.client_cert ))
-        client_key: (( property_overrides.bbs.client_key ))
-        require_ssl: (( property_overrides.bbs.require_ssl || nil ))
-        client_session_cache_size: (( property_overrides.bbs.client_session_cache_size || nil ))
-        max_idle_conns_per_host: (( property_overrides.bbs.max_idle_conns_per_host || nil ))
-      cc:
-        base_url: (( config_from_cf.cc.srv_api_uri ))
-        basic_auth_username: (( config_from_cf.cc.internal_api_user ))
-        basic_auth_password: (( config_from_cf.cc.internal_api_password ))
-      log_level: (( property_overrides.nsync.log_level || nil ))
     rep:
-      preloaded_rootfses: (( rootfs_overrides.diego.rep.preloaded_rootfses || nil ))
+      preloaded_rootfses: (( property_overrides.diego.rep.preloaded_rootfses || ["cflinuxfs2:/var/vcap/packages/cflinuxfs2/rootfs"] ))
       dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
       bbs:
         api_location: (( property_overrides.bbs.api_location || nil ))
@@ -618,8 +563,6 @@ properties:
       evacuation_timeout_in_seconds: (( property_overrides.rep.evacuation_timeout_in_seconds || nil ))
       trusted_certs: (( property_overrides.rep.trusted_certs || nil ))
       log_level: (( property_overrides.rep.log_level || nil ))
-    rootfs_cflinuxfs2:
-      trusted_certs: (( property_overrides.rootfs_cflinuxfs2.trusted_certs || nil ))
     route_emitter:
       dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
       bbs:
@@ -652,7 +595,30 @@ properties:
       uaa_secret: (( config_from_cf.uaa.ssh_proxy_client_secret ))
       uaa_token_url: (( config_from_cf.uaa.token_url ))
       diego_credentials: (( property_overrides.ssh_proxy.diego_credentials || nil ))
+
+  # -- Proerties below are used by jobs from the capi-release --
+  capi:
+    cc_uploader:
+      dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
+      log_level: (( property_overrides.cc_uploader.log_level || nil ))
+    nsync:
+      diego_privileged_containers: (( property_overrides.nsync.diego_privileged_containers || nil ))
+      dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
+      bbs:
+        api_location: (( property_overrides.bbs.api_location || nil ))
+        ca_cert: (( property_overrides.bbs.ca_cert ))
+        client_cert: (( property_overrides.bbs.client_cert ))
+        client_key: (( property_overrides.bbs.client_key ))
+        require_ssl: (( property_overrides.bbs.require_ssl || nil ))
+        client_session_cache_size: (( property_overrides.bbs.client_session_cache_size || nil ))
+        max_idle_conns_per_host: (( property_overrides.bbs.max_idle_conns_per_host || nil ))
+      cc:
+        base_url: (( config_from_cf.cc.srv_api_uri ))
+        basic_auth_username: (( config_from_cf.cc.internal_api_user ))
+        basic_auth_password: (( config_from_cf.cc.internal_api_password ))
+      log_level: (( property_overrides.nsync.log_level || nil ))
     stager:
+      diego_privileged_containers: (( property_overrides.stager.diego_privileged_containers || nil ))
       dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
       cc:
         basic_auth_username: (( config_from_cf.cc.internal_api_user ))
@@ -685,19 +651,19 @@ properties:
 
   # -- Proerties below are used by jobs from garden-linux-release --
   garden:
-    listen_network: (( property_overrides.garden.listen_network || nil ))
-    listen_address: (( property_overrides.garden.listen_address || nil ))
+    allow_host_access: (( property_overrides.garden.allow_host_access || nil ))
+    allow_networks: (( property_overrides.garden.allow_networks || nil ))
     default_container_grace_time: (( property_overrides.garden.default_container_grace_time || 0 ))
     deny_networks: (( property_overrides.garden.deny_networks || ["0.0.0.0/0"] ))
-    allow_networks: (( property_overrides.garden.allow_networks || nil ))
-    allow_host_access: (( property_overrides.garden.allow_host_access || nil ))
-    insecure_docker_registry_list: (( property_overrides.garden.insecure_docker_registry_list || nil ))
-    network_mtu: (( property_overrides.garden.mtu || nil ))
+    destroy_containers_on_start: (( property_overrides.garden.destroy_containers_on_start || true ))
     disk_quota_enabled: (( property_overrides.garden.disk_quota_enabled || nil ))
-    persistent_image_list: (( property_overrides.garden.persistent_image_list || rootfs_overrides.garden.persistent_image_list || ["/var/vcap/packages/rootfs_cflinuxfs2/rootfs"] ))
-    enable_graph_cleanup: (( property_overrides.garden.enable_graph_cleanup || true ))
     graph_cleanup_threshold_in_mb: (( property_overrides.garden.graph_cleanup_threshold_in_mb || 0 ))
+    insecure_docker_registry_list: (( property_overrides.garden.insecure_docker_registry_list || nil ))
+    listen_address: (( property_overrides.garden.listen_address || nil ))
+    listen_network: (( property_overrides.garden.listen_network || nil ))
     log_level: (( property_overrides.garden.log_level || nil ))
+    network_mtu: (( property_overrides.garden.mtu || nil ))
+    persistent_image_list: (( property_overrides.garden.persistent_image_list || ["/var/vcap/packages/cflinuxfs2/rootfs"] ))
 
 
 # The keys below should not be included in the final stub
@@ -705,11 +671,84 @@ config_from_cf: (( merge ))
 iaas_settings: (( merge ))
 instance_count_overrides: (( merge || nil ))
 property_overrides: (( merge ))
-rootfs_overrides: (( merge || nil ))
-bridge_overrides: (( merge || nil ))
-release_versions: (( merge || nil ))
+sql_overrides: (( merge  || nil ))
+bridge_overrides:
+  job_release: cf
+  releases: (( merge || [] ))
+
+bbs_overrides:
+  job_properties:
+    consul: (( merge  || base_etcd_properties.consul ))
+  job_templates: (( merge || base_job_templates.database ))
+  etcd_properties: (( merge || base_etcd_properties.properties ))
+  bbs_properties:
+    etcd:
+      machines: (( base_etcd_properties.properties.machines ))
+      require_ssl: (( property_overrides.etcd.require_ssl || nil ))
+      ca_cert: (( property_overrides.etcd.ca_cert ))
+      client_cert: (( property_overrides.etcd.client_cert ))
+      client_key: (( property_overrides.etcd.client_key ))
+      client_session_cache_size: (( property_overrides.etcd.client_session_cache_size || nil ))
+      max_idle_conns_per_host: (( property_overrides.etcd.max_idle_conns_per_host || nil ))
+  releases: (( merge || base_etcd_properties.releases ))
+
+base_etcd_properties:
+  releases:
+  - name: etcd
+    version: (( release_versions.etcd || "latest" ))
+  consul:
+    agent:
+      services:
+        etcd: {}
+  properties:
+    machines: ["etcd.service.cf.internal"]
+    advertise_urls_dns_suffix: "etcd.service.cf.internal"
+    cluster:
+      - name: "database_z1"
+        instances: (( instance_count_overrides.database_z1.instances || 1 ))
+      - name: "database_z2"
+        instances: (( instance_count_overrides.database_z2.instances || 1 ))
+      - name: "database_z3"
+        instances: (( instance_count_overrides.database_z3.instances || 1 ))
+      - name: "colocated_z1"
+        instances: (( instance_count_overrides.colocated_z1.instances || 0 ))
+      - name: "colocated_z2"
+        instances: (( instance_count_overrides.colocated_z2.instances || 0 ))
+      - name: "colocated_z2"
+        instances: (( instance_count_overrides.colocated_z2.instances || 0 ))
+    require_ssl: (( property_overrides.etcd.require_ssl || nil ))
+    ca_cert: (( property_overrides.etcd.ca_cert || nil ))
+    server_cert: (( property_overrides.etcd.server_cert || nil ))
+    server_key: (( property_overrides.etcd.server_key || nil ))
+    client_cert: (( property_overrides.etcd.client_cert || nil ))
+    client_key: (( property_overrides.etcd.client_key || nil ))
+    peer_require_ssl: (( property_overrides.etcd.peer_require_ssl || nil ))
+    peer_ca_cert: (( property_overrides.etcd.peer_ca_cert || nil ))
+    peer_cert: (( property_overrides.etcd.peer_cert || nil ))
+    peer_key: (( property_overrides.etcd.peer_key || nil ))
+    heartbeat_interval_in_milliseconds: (( property_overrides.etcd.heartbeat_interval_in_milliseconds || nil ))
+    election_timeout_in_milliseconds: (( property_overrides.etcd.election_timeout_in_milliseconds || nil ))
+
+garden_overrides:
+  job_release: garden-linux
+  release:
+    name: garden-linux
+    version: (( release_versions.garden-linux || release_versions.garden_linux || "latest" ))
+
 empty_hash: {}
-base_releases: (( merge ))
+
+volman_overrides:
+  releases: (( merge || [] ))
+  driver_templates: (( merge || [] ))
+
+base_releases:
+  - name: diego
+    version: (( release_versions.diego || "latest" ))
+  - name: cflinuxfs2-rootfs
+    version: (( release_versions.cflinuxfs2-rootfs || "latest" ))
+
+release_versions: (( merge || nil ))
+
 base_job_templates:
   access:
     - name: consul_agent
@@ -720,26 +759,28 @@ base_job_templates:
       release: cf
     - name: file_server
       release: diego
+    - name: cfdot
+      release: diego
   brain:
     - name: consul_agent
       release: cf
     - name: auctioneer
       release: diego
-    - name: converger
-      release: diego
     - name: metron_agent
       release: cf
+    - name: cfdot
+      release: diego
   cc_bridge:
     - name: consul_agent
       release: cf
     - name: stager
-      release: (( bridge_overrides.job_release || "diego" ))
+      release: (( bridge_overrides.job_release || "cf" ))
     - name: nsync
-      release: (( bridge_overrides.job_release || "diego" ))
+      release: (( bridge_overrides.job_release || "cf" ))
     - name: tps
-      release: (( bridge_overrides.job_release || "diego" ))
+      release: (( bridge_overrides.job_release || "cf" ))
     - name: cc_uploader
-      release: (( bridge_overrides.job_release || "diego" ))
+      release: (( bridge_overrides.job_release || "cf" ))
     - name: metron_agent
       release: cf
   cell:
@@ -748,11 +789,13 @@ base_job_templates:
     - name: rep
       release: diego
     - name: garden
-      release: garden-linux
-    - name: (( rootfs_overrides.job_name || "rootfses" ))
-      release: (( rootfs_overrides.job_release || "diego" ))
+      release: (( garden_overrides.job_release || "garden-linux" ))
+    - name: cflinuxfs2-rootfs-setup
+      release: cflinuxfs2-rootfs
     - name: metron_agent
       release: cf
+    - name: cfdot
+      release: diego
   database:
     - name: consul_agent
       release: cf
@@ -762,6 +805,8 @@ base_job_templates:
       release: diego
     - name: metron_agent
       release: cf
+    - name: cfdot
+      release: diego
   route_emitter:
     - name: consul_agent
       release: cf
@@ -769,36 +814,28 @@ base_job_templates:
       release: diego
     - name: metron_agent
       release: cf
+    - name: cfdot
+      release: diego
   colocated:
-    - name: consul_agent
-      release: cf
     - name: rep
       release: diego
     - name: auctioneer
       release: diego
-    - name: bbs
-      release: diego
     - name: cc_uploader
-      release: (( bridge_overrides.job_release || "diego" ))
-    - name: converger
-      release: diego
-    - name: etcd
-      release: etcd
+      release: cf
     - name: file_server
       release: diego
     - name: garden
-      release: garden-linux
-    - name: metron_agent
-      release: cf
+      release: (( garden_overrides.job_release || "garden-linux" ))
     - name: nsync
-      release: (( bridge_overrides.job_release || "diego" ))
-    - name: (( rootfs_overrides.job_name || "rootfses" ))
-      release: (( rootfs_overrides.job_release || "diego" ))
+      release: cf
+    - name: cflinuxfs2-rootfs-setup
+      release: cflinuxfs2-rootfs
     - name: route_emitter
       release: diego
     - name: ssh_proxy
       release: diego
     - name: stager
-      release: (( bridge_overrides.job_release || "diego" ))
+      release: cf
     - name: tps
-      release: (( bridge_overrides.job_release || "diego" ))
+      release: cf

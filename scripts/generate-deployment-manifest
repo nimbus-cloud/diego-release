@@ -20,8 +20,11 @@ MANDATORY ARGUMENTS:
 OPTIONAL ARGUMENTS:
     -n <count-path>     Path to instance-count-overrides stub file.
     -v <versions-path>  Path to release-versions stub file.
-    -r                  Opt into using cflinuxfs-rootfs release.
-    -b                  Opt into using cf-release for bridge components.
+    -s <sql-db-path>    Path to SQL stub file.
+    -x                  Opt out of deploying etcd with the database vms (requires sql)
+    -g                  Opt into using garden-runc-release for cells.
+    -b                  Opt into using capi-release for bridge components.
+    -d <voldriver-path> Path to voldriver stub file.
 
 EXAMPLE:
     $0 \\
@@ -30,16 +33,20 @@ EXAMPLE:
       -p manifest-generation/bosh-lite-stubs/property-overrides.yml \\
       -n manifest-generation/bosh-lite-stubs/instance-count-overrides.yml \\
       -v manifest-generation/bosh-lite-stubs/release-versions.yml \\
-      -r
+      -s manifest-generation/bosh-lite-stubs/diego-sql.yml \\
+      -x \\
+      -d manifest-generation/bosh-lite-stubs/experimental/voldriver/drivers.yml \\
+      -g \\
       -b
 EOF
   exit 1
 }
 
-rootfs_properties="${manifest_generation}/base-releases.yml";
+base_releases="${manifest_generation}/base-releases.yml"
+garden_properties=""
 bridge_properties=""
 
-while getopts "c:i:p:n:k:v:rb" opt; do
+while getopts "c:i:p:n:k:v:s:d:krbgx" opt; do
   case $opt in
     c)
       cf_deployment_manifest=$OPTARG
@@ -53,17 +60,29 @@ while getopts "c:i:p:n:k:v:rb" opt; do
     n)
       instance_counts=$OPTARG
       ;;
-    k)
-      >&2 echo "DEPRECATED: Persistent disk configuration moved to IaaS-settings stub"
-      ;;
-    r)
-      rootfs_properties="${manifest_generation}/rootfs-properties.yml";
+    g)
+      garden_properties="${manifest_generation}/garden-runc-properties.yml";
       ;;
     b)
-      bridge_properties="${manifest_generation}/bridge-properties.yml";
+      bridge_properties="${manifest_generation}/capi-bridge-properties.yml";
       ;;
     v)
       release_versions=$OPTARG
+      ;;
+    s)
+      sql_settings=$OPTARG
+      ;;
+    k)
+      >&2 echo "DEPRECATED -k flag: Persistent disk configuration moved to IaaS-settings stub."
+      ;;
+    r)
+      >&2 echo "DEPRECATED -r flag: The cflinuxfs2 rootfs now always comes from its own release."
+      ;;
+    d)
+      voldriver_settings=$OPTARG
+      ;;
+    x)
+      bbs_properties="${manifest_generation}/bbs-overrides-no-etcd.yml"
       ;;
     *)
       echo "Unknown arguments"
@@ -103,6 +122,16 @@ else
   fi
 fi
 
+if [[ ! -z "${sql_settings}" && ! -f "${sql_settings}" ]]; then
+  >&2 echo "ERROR: SQL Setting stub '${sql_settings}' is not a regular file"
+  argument_error=true
+fi
+
+if [[ ! -z "${voldriver_settings}" && ! -f "${voldriver_settings}" ]]; then
+  >&2 echo "ERROR: Voldriver Setting stub '${voldriver_settings}' is not a regular file"
+  argument_error=true
+fi
+
 if [[ ! -z "${instance_counts}" && ! -f "${instance_counts}" ]]; then
   >&2 echo "ERROR: Instance-count-overrides stub '${instance_counts}' is not a regular file"
   argument_error=true
@@ -128,12 +157,15 @@ spiff merge \
 
 spiff merge \
   ${manifest_generation}/diego.yml \
-  ${rootfs_properties} \
+  ${release_versions} \
+  ${bbs_properties} \
+  ${garden_properties} \
   ${bridge_properties} \
   ${property_overrides} \
   ${instance_counts} \
+  ${sql_settings} \
+  ${voldriver_settings} \
   ${iaas_settings} \
-  ${release_versions} \
   ${tmpdir}/config-from-cf.yml \
   > ${tmpdir}/diego.yml
 
