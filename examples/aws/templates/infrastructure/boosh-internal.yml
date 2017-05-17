@@ -1,9 +1,5 @@
 ---
-meta:
-  vpc:
-    base: "10.10"
-
-  availability_zones: (( merge ))
+meta: (( merge ))
 
 vpc:
   cidr: (( meta.vpc.base ".0.0/16" ))
@@ -12,7 +8,9 @@ dns:
   - (( meta.vpc.base ".0.2" ))
   - (( meta.vpc.base ".0.6" ))
 
-subnets:
+default_subnets:
+  - <<: (( merge ))
+
   - name: BOSHZ1
     cidr: (( meta.vpc.base ".0.0/24" ))
     availability_zone: (( meta.availability_zones.[0] ))
@@ -81,6 +79,34 @@ subnets:
 
   - name: MySQLZ3
     cidr: (( meta.vpc.base ".13.0/24" ))
+    availability_zone: (( meta.availability_zones.[2] ))
+
+  - name: DiegoWindowsZ1
+    cidr: (( meta.vpc.base ".18.0/24" ))
+    availability_zone: (( meta.availability_zones.[0] ))
+
+  - name: DiegoWindowsZ2
+    cidr: (( meta.vpc.base ".19.0/24" ))
+    availability_zone: (( meta.availability_zones.[1] ))
+
+  - name: DiegoWindowsZ3
+    cidr: (( meta.vpc.base ".20.0/24" ))
+    availability_zone: (( meta.availability_zones.[2] ))
+
+  - name: DatadogFirehoseNozzle
+    cidr: (( meta.vpc.base ".21.0/24" ))
+    availability_zone: (( meta.availability_zones.[1] ))
+
+  - name: ROUTINGZ1
+    cidr: (( meta.vpc.base ".22.0/24" ))
+    availability_zone: (( meta.availability_zones.[0] ))
+
+  - name: ROUTINGZ2
+    cidr: (( meta.vpc.base ".23.0/24" ))
+    availability_zone: (( meta.availability_zones.[1] ))
+
+  - name: ROUTINGZ3
+    cidr: (( meta.vpc.base ".24.0/24" ))
     availability_zone: (( meta.availability_zones.[2] ))
 
 load_balancers:

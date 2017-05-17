@@ -10,7 +10,22 @@ templates:
   ca_certs_for_downloads.crt.erb: config/certs/rep/ca_certs_for_downloads.crt
   bbs_client.crt.erb: config/certs/bbs/client.crt
   bbs_client.key.erb: config/certs/bbs/client.key
+  rep_ca.crt.erb: config/certs/ca.crt
+  rep_server.crt.erb: config/certs/server.crt
+  rep_server.key.erb: config/certs/server.key
+  instance_identity.crt.erb: config/certs/rep/instance_identity.crt
+  instance_identity.key.erb: config/certs/rep/instance_identity.key
+  consul_ca.crt.erb: config/certs/consul/ca.crt
+  consul_client.crt.erb: config/certs/consul/client.crt
+  consul_client.key.erb: config/certs/consul/client.key
+  rep.json.erb: config/rep.json
   post-start.erb: bin/post-start
+  loggregator_ca.crt.erb: config/certs/loggregator/ca.crt
+  loggregator_client.crt.erb: config/certs/loggregator/client.crt
+  loggregator_client.key.erb: config/certs/loggregator/client.key
+  tls.crt.erb: config/certs/tls.crt
+  tls.key.erb: config/certs/tls.key
+  tls_ca.crt.erb: config/certs/tls_ca.crt
 
 packages:
   - pid_utils
@@ -52,13 +67,70 @@ properties:
   diego.rep.trusted_certs:
     description: "Concatenation of trusted CA certificates to be made available inside the rootfses"
     default: null
+  diego.rep.placement_tags:
+    description: "Array of tags used for scheduling Tasks and LRPs"
+    default: []
+  diego.rep.optional_placement_tags:
+    description: "Array of optional tags used for scheduling Tasks and LRPs"
+    default: []
+
+  loggregator.use_v2_api:
+    description: "True to use local metron agent gRPC v2 api. False, to use UDP v1 api"
+    default: false
+  loggregator.v2_api_port:
+    description: "Local metron agent gRPC port"
+    default: 3458
+  loggregator.ca_cert:
+    description: "CA Cert used to communicate with local metron agent over gRPC"
+  loggregator.cert:
+    description: "Cert used to communicate with local metron agent over gRPC"
+  loggregator.key:
+    description: "Key used to communicate with local metron agent over gRPC"
+
+  diego.rep.enable_legacy_api_endpoints:
+    description: "Whether to enable the auction, LRP, and Task endpoints on the legacy, insecurable API server"
+    default: true
+  diego.rep.listen_addr_admin:
+    description: "When enable_legacy_api_endpoints is set to false, serve (insecure) ping and evacuate requests on this address and port"
+    default: "127.0.0.1:1800"
+  diego.rep.advertise_domain:
+    description: "base domain at which the rep should advertise its secure API"
+    default: "cell.service.cf.internal"
+  diego.rep.listen_addr_securable:
+    description: "address where rep listens for LRP and task start auction requests"
+    default: "0.0.0.0:1801"
+  diego.rep.require_tls:
+    description: "Whether to require mutual TLS for communication to the securable rep API server"
+    default: false
+  diego.rep.ca_cert:
+    description: "PEM-encoded CA certificate"
+  diego.rep.server_cert:
+    description: "PEM-encoded server certificate"
+  diego.rep.server_key:
+    description: "PEM-encoded server key"
 
   diego.ssl.skip_cert_verify:
     description: "when connecting over https, ignore bad ssl certificates"
     default: false
   diego.executor.ca_certs_for_downloads:
-    description: "Concatenation of trusted CA certificates to be used when downloading assets."
+    description: "Concatenation of trusted CA certificates to be used when downloading assets. Deprecated in favor of configuration with tls.{cert,key,ca_cert}"
     default: null
+  tls.cert:
+    description: "PEM-encoded tls certificate that can be used for client or server auth"
+  tls.key:
+    description: "PEM-encoded tls client key"
+  tls.ca_cert:
+    description: "PEM-encoded tls client CA certificate for asset upload/download"
+
+  diego.rep.consul.require_tls:
+    description: "Require mutual TLS to talk to the local consul API"
+    default: false
+  diego.rep.consul.ca_cert:
+    description: "PEM-encoded CA certificate"
+  diego.rep.consul.client_cert:
+    description: "PEM-encoded client certificate"
+  diego.rep.consul.client_key:
+    description: "PEM-encoded client key"
 
   diego.executor.memory_capacity_mb:
     description: "the memory capacity the executor should manage.  this should not be greater than the actual memory on the VM"
@@ -66,6 +138,9 @@ properties:
   diego.executor.disk_capacity_mb:
     description: "the container disk capacity the executor should manage.  this should not be greater than the actual disk quota on the VM"
     default: "auto"
+  diego.executor.auto_disk_capacity_overhead_mb:
+    description: "the amount of overhead that should be subtracted from the container disk capacity, this only applies when disk_capacity_mb is set to auto"
+    default: 0
   diego.executor.max_concurrent_downloads:
     description: "the max concurrent download steps that can be active"
     default: 5
@@ -97,7 +172,7 @@ properties:
     default: 30
   diego.executor.unhealthy_monitoring_interval_in_seconds:
     description: "Interval to check unhealthy containers in seconds."
-    default: 0.5
+    default: 2
   diego.executor.create_work_pool_size:
     description: "Maximum number of concurrent create container operations."
     default: 32
@@ -122,7 +197,7 @@ properties:
     default: "10m"
   diego.executor.garden_healthcheck.command_retry_pause:
     description: "Time to wait between retrying garden commands"
-    default: "5s"
+    default: "1s"
   diego.executor.garden_healthcheck.process.path:
     description: "Path of the command to run to perform a container healthcheck"
     default: "/bin/sh"
@@ -143,6 +218,13 @@ properties:
   diego.executor.volman.driver_paths:
     description: "Experimental: OS style path string containing the directories volman will look in for voldriver specs (delimited by : or ; depending on the OS)"
     default: "/var/vcap/data/voldrivers"
+  diego.executor.instance_identity_ca_cert:
+    description: "Experimental: PEM-encoded CA used to sign instance identity credentials. Enables instance identity if set along with instance_identity_key"
+  diego.executor.instance_identity_key:
+    description: "Experimental: PEM-encoded key used to sign instance identity credentials. Enables instance identity if set along with instance_identity_ca_cert"
+  diego.executor.instance_identity_validity_period_in_hours:
+    description: "Experimental: Validity period for the generated instance identity certificate"
+    default: 24
 
   diego.rep.bbs.api_location:
     description: "Address to the BBS Server"
@@ -166,3 +248,10 @@ properties:
     description: "Site (datacenter name), used for node name uniqness"
   diego.firewall_environment:
     description: "nb-config firewall environment: test, dev, stage, prod"
+
+  diego.rep.job_name:
+    description: "The name of the Diego job referenced by this spec (DO NOT override)"
+    default: "rep"
+
+  diego.rep.locket.api_location:
+    description: "EXPERIMENTAL: hostname and port of the locket server"

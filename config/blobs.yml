@@ -1,25 +1,16 @@
----
-cf-cli/cf-linux-amd64.tgz:
-  object_id: 446e6699-1108-476b-b42c-ab8147be5119
-  sha: 28ae09d55ae3a156117a0e745c90e8b96d147ae2
-  size: 5472279
-docker/docker-1.8.3:
-  object_id: 91d23f11-4a32-45b5-b185-b52cb2ca58e0
-  sha: 401971958a095fe2f9c42a35effb1b0245e52e87
-  size: 21573264
-golang/go1.6.3.linux-amd64.tar.gz:
-  object_id: 02ecaea2-a638-4fe0-a60f-9549018ffaa6
-  sha: 5e916ba4dd8c2fc43beafca4c08b334c4d0686f3
-  size: 84856920
-golang/go1.6.3.windows-amd64.zip:
-  object_id: 2e12c229-ac28-4ad6-afbd-04d65e95e493
-  sha: ff377b0e402ba5968a47cf1780b7c322e4d4d2f6
-  size: 91586837
-lifecycles/windows_app_lifecycle-e8a3bb1.tgz:
-  object_id: 1a74df71-1a11-481e-9ef2-028d8bffee80
-  sha: ad5c2c292ea692d52671056ffd10aaf49b028dea
-  size: 5116134
+golang/go1.7.4.linux-amd64.tar.gz:
+  size: 84021919
+  object_id: 2b2e301b-ff53-4547-988a-5476630addf7
+  sha: 2e5baf03d1590e048c84d1d5b4b6f2540efaaea1
+golang/go1.7.4.windows-amd64.zip:
+  size: 90409580
+  object_id: bf5c2c01-a92b-4a28-a6b5-7d4b8fe138e3
+  sha: a0da2f5d67e5b800eba811a34ca4b2aa22cca678
 jq/jq-linux64:
+  size: 3027945
   object_id: 176d1ae8-3602-4291-90c4-f29342b48aec
   sha: d8e36831c3c94bb58be34dd544f44a6c6cb88568
-  size: 3027945
+lifecycles/windows_app_lifecycle-d74e304.tgz:
+  size: 1990290
+  object_id: 985bb641-1bc5-4914-7329-13029fcd5cf4
+  sha: 0e8902335a313a8724deee1e24cd85e3a395b125

@@ -18,7 +18,11 @@ elastic_ips:
 
 dns: (( merge ))
 
-subnets:
+subnets: (( default_subnets extra_subnets ))
+
+extra_subnets: (( merge || [] ))
+
+default_subnets:
   - name: BOSHZ1
     cidr: (( merge ))
     availability_zone: (( merge ))
@@ -28,7 +32,7 @@ subnets:
       name: NATZ1
       type: m1.small
       ip: (( merge ))
-      key_pair_name: (( BoshKeypairName ))
+      key_pair_name: (( default_key_name ))
       security_group: Open
 
   - name: CFELBZ1
@@ -48,6 +52,24 @@ subnets:
     availability_zone: (( merge ))
     route_table:
       internet_gateway: VPCGateway
+
+  - name: ROUTINGZ1
+    cidr: (( merge ))
+    availability_zone: (( merge ))
+    route_table:
+      instance: NATZ1
+
+  - name: ROUTINGZ2
+    cidr: (( merge ))
+    availability_zone: (( merge ))
+    route_table:
+      instance: NATZ1
+
+  - name: ROUTINGZ3
+    cidr: (( merge ))
+    availability_zone: (( merge ))
+    route_table:
+      instance: NATZ1
 
   - name: SSHProxyELBZ1
     cidr: (( merge ))
@@ -127,6 +149,30 @@ subnets:
     route_table:
       instance: NATZ1
 
+  - name: DiegoWindowsZ1
+    cidr: (( merge ))
+    availability_zone: (( merge ))
+    route_table:
+      instance: NATZ1
+
+  - name: DiegoWindowsZ2
+    cidr: (( merge ))
+    availability_zone: (( merge ))
+    route_table:
+      instance: NATZ1
+
+  - name: DiegoWindowsZ3
+    cidr: (( merge ))
+    availability_zone: (( merge ))
+    route_table:
+      instance: NATZ1
+
+  - name: DatadogFirehoseNozzle
+    cidr: (( merge ))
+    availability_zone: (( merge ))
+    route_table:
+      instance: NATZ1
+
 buckets:
   - name: AppBits
   - name: AppResources
@@ -152,7 +198,7 @@ load_balancers:
     security_groups:
       - Web
     cross_zone: true
-  
+
   - name: SSHProxyELB
     dns_record: "ssh"
     listeners: (( merge ))
@@ -176,11 +222,20 @@ security_groups:
   - name: BOSH
     ingress:
       - protocol: tcp
-        ports: 0-65535
+        ports: 22
+        cidr: 0.0.0.0/0
+      - protocol: tcp
+        ports: 6868
+        cidr: 0.0.0.0/0
+      - protocol: tcp
+        ports: 25555
         cidr: 0.0.0.0/0
       - protocol: udp
         ports: 0-65535
-        cidr: 0.0.0.0/0
+        cidr: (( vpc.cidr ))
+      - protocol: tcp
+        ports: 0-65535
+        cidr: (( vpc.cidr ))
 
   - name: Open
     ingress:
@@ -195,10 +250,10 @@ security_groups:
     ingress:
       - protocol: tcp
         ports: 0-65535
-        cidr: 0.0.0.0/0
+        cidr: (( vpc.cidr ))
       - protocol: udp
         ports: 0-65535
-        cidr: 0.0.0.0/0
+        cidr: (( vpc.cidr ))
 
   - name: Web
     ingress:
@@ -221,4 +276,4 @@ security_groups:
         cidr: 0.0.0.0/0
         ports: 2222
 
-BoshKeypairName: (( merge ))
+default_key_name: (( merge ))

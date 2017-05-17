@@ -1,12 +1,9 @@
-try {
-    $BOSH_INSTALL_TARGET = Resolve-Path $env:BOSH_INSTALL_TARGET
-} catch {
-    $Host.UI.WriteErrorLine($_.Exception.Message)
-    Exit 1
-}
+. ./exiter.ps1
 
-$path="golang/go1.6.3.windows-amd64.zip"
+$ErrorActionPreference = "Stop";
+trap { $host.SetShouldExit(1) }
 
+$GOLANG_ZIP="golang/go1.7.4.windows-amd64.zip"
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 function Unzip
 {
@@ -15,13 +12,6 @@ function Unzip
     [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath)
 }
 
-try
-{
-    Unzip $path ${BOSH_INSTALL_TARGET}
-}
-catch
-{
-    $Host.UI.WriteErrorLine($_.Exception.Message)
-    Exit 1
-}
+Unzip "$GOLANG_ZIP" "$env:BOSH_INSTALL_TARGET"
+
 Exit 0

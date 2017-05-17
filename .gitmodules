@@ -1,7 +1,3 @@
-[submodule "src/github.com/cloudfoundry/gunk"]
-	path = src/github.com/cloudfoundry/gunk
-	url = https://github.com/cloudfoundry/gunk
-	branch = master
 [submodule "src/github.com/tedsuo/ifrit"]
 	path = src/github.com/tedsuo/ifrit
 	url = https://github.com/tedsuo/ifrit
@@ -37,10 +33,6 @@
 	path = src/github.com/nu7hatch/gouuid
 	url = https://github.com/nu7hatch/gouuid
 	branch = master
-[submodule "src/github.com/cloudfoundry/gorouter"]
-	path = src/github.com/cloudfoundry/gorouter
-	url = https://github.com/cloudfoundry/gorouter
-	branch = master
 [submodule "src/github.com/tedsuo/rata"]
 	path = src/github.com/tedsuo/rata
 	url = https://github.com/tedsuo/rata
@@ -52,10 +44,6 @@
 [submodule "src/github.com/cloudfoundry/storeadapter"]
 	path = src/github.com/cloudfoundry/storeadapter
 	url = https://github.com/cloudfoundry/storeadapter
-	branch = master
-[submodule "src/github.com/pivotal-golang/lager"]
-	path = src/github.com/pivotal-golang/lager
-	url = https://github.com/pivotal-golang/lager
 	branch = master
 [submodule "src/code.cloudfoundry.org/lager"]
 	path = src/code.cloudfoundry.org/lager
@@ -79,10 +67,6 @@
 [submodule "src/github.com/vito/go-sse"]
 	path = src/github.com/vito/go-sse
 	url = https://github.com/vito/go-sse
-	branch = master
-[submodule "src/github.com/pivotal-golang/localip"]
-	path = src/github.com/pivotal-golang/localip
-	url = https://github.com/pivotal-golang/localip
 	branch = master
 [submodule "src/github.com/golang/protobuf"]
 	path = src/github.com/golang/protobuf
@@ -119,16 +103,9 @@
 	path = src/github.com/cloudfoundry/sonde-go
 	url = https://github.com/cloudfoundry/sonde-go
 	branch = master
-[submodule "src/btrfs-progs"]
-	path = src/btrfs-progs
-	url = git://git.kernel.org/pub/scm/linux/kernel/git/kdave/btrfs-progs.git
 [submodule "src/github.com/ugorji/go"]
 	path = src/github.com/ugorji/go
 	url = https://github.com/ugorji/go
-	branch = master
-[submodule "src/github.com/cloudfoundry-incubator/garden"]
-	path = src/github.com/cloudfoundry-incubator/garden
-	url = https://github.com/cloudfoundry-incubator/garden
 	branch = master
 [submodule "src/github.com/onsi/say"]
 	path = src/github.com/onsi/say
@@ -164,20 +141,12 @@
 [submodule "src/github.com/gorilla/context"]
 	path = src/github.com/gorilla/context
 	url = https://github.com/gorilla/context
-[submodule "src/github.com/cloudfoundry-incubator/routing-info"]
-	path = src/github.com/cloudfoundry-incubator/routing-info
-	url = https://github.com/cloudfoundry-incubator/routing-info
-	branch = bbs-import-path
 [submodule "src/github.com/kr/fs"]
 	path = src/github.com/kr/fs
 	url = https://github.com/kr/fs
 [submodule "src/github.com/pkg/sftp"]
 	path = src/github.com/pkg/sftp
 	url = https://github.com/pkg/sftp
-[submodule "src/github.com/cloudfoundry-incubator/volman"]
-	path = src/github.com/cloudfoundry-incubator/volman
-	url = https://github.com/cloudfoundry-incubator/volman
-	branch = master
 [submodule "src/github.com/go-sql-driver/mysql"]
 	path = src/github.com/go-sql-driver/mysql
 	url = https://github.com/go-sql-driver/mysql
@@ -229,7 +198,7 @@
 	branch = master
 [submodule "src/code.cloudfoundry.org/rep"]
 	path = src/code.cloudfoundry.org/rep
-	url = https://github.com/nimbus-cloud/rep
+	url = https://github.com/cloudfoundry/rep
 	branch = master
 [submodule "src/code.cloudfoundry.org/vizzini"]
 	path = src/code.cloudfoundry.org/vizzini
@@ -279,10 +248,6 @@
 	path = src/code.cloudfoundry.org/route-emitter
 	url = https://github.com/cloudfoundry/route-emitter
 	branch = master
-[submodule "src/code.cloudfoundry.org/diegocanaryapp"]
-	path = src/code.cloudfoundry.org/diegocanaryapp
-	url = https://github.com/cloudfoundry/diegocanaryapp
-	branch = master
 [submodule "src/code.cloudfoundry.org/archiver"]
 	path = src/code.cloudfoundry.org/archiver
 	url = https://github.com/cloudfoundry/archiver
@@ -306,10 +271,6 @@
 [submodule "src/code.cloudfoundry.org/localip"]
 	path = src/code.cloudfoundry.org/localip
 	url = https://github.com/cloudfoundry/localip
-	branch = master
-[submodule "src/github.com/cloudfoundry-incubator/localdriver"]
-	path = src/github.com/cloudfoundry-incubator/localdriver
-	url = https://github.com/cloudfoundry-incubator/localdriver
 	branch = master
 [submodule "src/github.com/spf13/cobra"]
 	path = src/github.com/spf13/cobra
@@ -336,17 +297,89 @@
 	url = https://github.com/apcera/nats
 [submodule "src/code.cloudfoundry.org/voldriver"]
 	path = src/code.cloudfoundry.org/voldriver
-	url = https://github.com/cloudfoundry-incubator/voldriver
+	url = https://github.com/cloudfoundry/voldriver
 	branch = master
 [submodule "src/code.cloudfoundry.org/volman"]
 	path = src/code.cloudfoundry.org/volman
-	url = https://github.com/cloudfoundry-incubator/volman
+	url = https://github.com/cloudfoundry/volman
 	branch = master
 [submodule "src/code.cloudfoundry.org/localdriver"]
 	path = src/code.cloudfoundry.org/localdriver
-	url = https://github.com/cloudfoundry-incubator/localdriver
+	url = https://github.com/cloudfoundry/localdriver
 	branch = master
 [submodule "src/code.cloudfoundry.org/goshims"]
 	path = src/code.cloudfoundry.org/goshims
-	url = https://github.com/cloudfoundry-incubator/goshims
+	url = https://github.com/cloudfoundry/goshims
 	branch = master
+[submodule "src/code.cloudfoundry.org/gorouter"]
+	path = src/code.cloudfoundry.org/gorouter
+	url = https://github.com/cloudfoundry/gorouter
+	branch = master
+[submodule "src/code.cloudfoundry.org/garden"]
+	path = src/code.cloudfoundry.org/garden
+	url = https://github.com/cloudfoundry/garden
+	branch = master
+[submodule "src/gopkg.in/yaml.v2"]
+	path = src/gopkg.in/yaml.v2
+	url = https://gopkg.in/yaml.v2
+	branch = v2
+[submodule "src/code.cloudfoundry.org/routing-info"]
+	path = src/code.cloudfoundry.org/routing-info
+	url = https://github.com/cloudfoundry-incubator/routing-info
+	branch = master
+[submodule "src/github.com/dgrijalva/jwt-go"]
+	path = src/github.com/dgrijalva/jwt-go
+	url = https://github.com/dgrijalva/jwt-go
+[submodule "src/code.cloudfoundry.org/uaa-go-client"]
+	path = src/code.cloudfoundry.org/uaa-go-client
+	url = https://github.com/cloudfoundry-incubator/uaa-go-client
+[submodule "src/github.com/armon/go-proxyproto"]
+	path = src/github.com/armon/go-proxyproto
+	url = https://github.com/armon/go-proxyproto
+[submodule "src/code.cloudfoundry.org/routing-api"]
+	path = src/code.cloudfoundry.org/routing-api
+	url = https://github.com/cloudfoundry-incubator/routing-api
+[submodule "src/github.com/rcrowley/go-metrics"]
+	path = src/github.com/rcrowley/go-metrics
+	url = https://github.com/rcrowley/go-metrics
+[submodule "src/code.cloudfoundry.org/trace-logger"]
+	path = src/code.cloudfoundry.org/trace-logger
+	url = https://github.com/cloudfoundry-incubator/trace-logger
+[submodule "src/code.cloudfoundry.org/guardian"]
+	path = src/code.cloudfoundry.org/guardian
+	url = https://github.com/cloudfoundry/guardian
+	branch = master
+[submodule "src/github.com/eapache/go-resiliency"]
+	path = src/github.com/eapache/go-resiliency
+	url = https://github.com/eapache/go-resiliency
+[submodule "src/code.cloudfoundry.org/workpool"]
+	path = src/code.cloudfoundry.org/workpool
+	url = https://github.com/cloudfoundry/workpool
+	branch = master
+[submodule "src/code.cloudfoundry.org/durationjson"]
+	path = src/code.cloudfoundry.org/durationjson
+	url = https://github.com/cloudfoundry/durationjson
+	branch = master
+[submodule "src/google.golang.org/grpc"]
+	path = src/google.golang.org/grpc
+	url = https://github.com/grpc/grpc-go
+	branch = master
+[submodule "src/code.cloudfoundry.org/loggregator-api"]
+	path = src/code.cloudfoundry.org/loggregator-api
+	url = https://github.com/cloudfoundry/loggregator-api
+	branch = master
+[submodule "src/code.cloudfoundry.org/go-loggregator"]
+	path = src/code.cloudfoundry.org/go-loggregator
+	url = https://github.com/cloudfoundry-incubator/go-loggregator
+[submodule "src/github.com/cactus/go-statsd-client"]
+	path = src/github.com/cactus/go-statsd-client
+	url = https://github.com/cactus/go-statsd-client
+[submodule "src/code.cloudfoundry.org/cf-tcp-router"]
+	path = src/code.cloudfoundry.org/cf-tcp-router
+	url = https://github.com/cloudfoundry-incubator/cf-tcp-router
+[submodule "src/github.com/jinzhu/inflection"]
+	path = src/github.com/jinzhu/inflection
+	url = https://github.com/jinzhu/inflection
+[submodule "src/github.com/jinzhu/gorm"]
+	path = src/github.com/jinzhu/gorm
+	url = https://github.com/jinzhu/gorm

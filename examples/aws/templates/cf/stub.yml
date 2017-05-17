@@ -48,20 +48,94 @@ networks:
           subnet: (( merge ))
 
 resource_pools:
+
+  - name: small_z1
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
+  - name: medium_z1
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
+  - name: large_z1
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
+  - name: runner_z1
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
   - name: router_z1
     cloud_properties:
+      instance_type: (( merge ))
       availability_zone: (( merge ))
       elbs: (( merge ))
+
+  - name: small_z2
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
+  - name: medium_z2
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
+  - name: large_z2
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
+  - name: runner_z2
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
 
   - name: router_z2
     cloud_properties:
+      instance_type: (( merge ))
       availability_zone: (( merge ))
       elbs: (( merge ))
 
+  - name: small_z3
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
+  - name: medium_z3
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
+  - name: large_z3
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
+  - name: runner_z3
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
   - name: router_z3
     cloud_properties:
+      instance_type: (( merge ))
       availability_zone: (( merge ))
       elbs: (( merge ))
+
+  - name: small_errand
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
+
+  - name: xlarge_errand
+    cloud_properties:
+      instance_type: (( merge ))
+      availability_zone: (( merge ))
 
 jobs:
   - name: postgres_z1
@@ -103,56 +177,46 @@ properties:
       droplet_directory_key: (( merge ))
     buildpacks:
       buildpack_directory_key: (( merge ))
+    mutual_tls:
+      ca_cert: (( merge ))
+      public_cert: (( merge ))
+      private_key: (( merge ))
 
-  ccdb:
-    db_scheme: postgres
-    address: (( merge ))
-    port: 5524
-    roles:
-      - tag: admin
-        name: ccadmin
-        password: admin
-    databases:
-      - tag: cc
-        name: ccdb
-        citext: true
-
+  loggregator:
+    tls:
+      ca_cert: (( merge ))
+      doppler:
+        cert: (( merge ))
+        key: (( merge ))
+      trafficcontroller:
+        cert: (( merge ))
+        key: (( merge ))
+      metron:
+        cert: (( merge ))
+        key: (( merge ))
+      statsd_injector:
+        cert: (( merge ))
+        key: (( merge ))
+      syslogdrainbinder:
+        cert: (( merge ))
+        key: (( merge ))
+  login:
+    saml:
+      serviceProviderCertificate: (( merge ))
+      serviceProviderKey: (( merge ))
+      serviceProviderKeyPassword: (( merge ))
   uaa:
+    ca_cert: (( merge ))
+    sslPrivateKey: (( merge ))
+    sslCertificate: (( merge ))
     jwt:
-      signing_key: (( merge ))
       verification_key: (( merge ))
-
-  uaadb:
-    db_scheme: postgresql
-    address: (( merge ))
-    port: 5524
-    roles:
-      - tag: admin
-        name: uaaadmin
-        password: admin
-    databases:
-      - tag: uaa
-        name: uaadb
-        citext: true
+      policy:
+        active_key_id: (( merge ))
+        keys: (( merge ))
 
   databases:
-    db_scheme: postgres
     address: (( merge ))
-    port: 5524
-    roles:
-      - tag: admin
-        name: ccadmin
-        password: admin
-      - tag: admin
-        name: uaaadmin
-        password: admin
-    databases:
-      - tag: cc
-        name: ccdb
-        citext: true
-      - tag: uaa
-        name: uaadb
-        citext: true
 
   consul:
     ca_cert: (( merge ))

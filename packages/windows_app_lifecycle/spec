@@ -2,4 +2,8 @@
 name: windows_app_lifecycle
 
 files:
-  - lifecycles/windows_app_lifecycle-e8a3bb1.tgz
+  - lifecycles/windows_app_lifecycle-*.tgz
+
+dependencies:
+  - diego-sshd
+  - healthcheck

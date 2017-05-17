@@ -7,6 +7,7 @@ dependencies:
   - diego-sshd
 
 files:
+  - code.cloudfoundry.org/archiver/compressor/*.go # gosub
   - code.cloudfoundry.org/archiver/extractor/*.go # gosub
   - code.cloudfoundry.org/buildpackapplifecycle/*.go # gosub
   - code.cloudfoundry.org/buildpackapplifecycle/builder/*.go # gosub
@@ -14,5 +15,6 @@ files:
   - code.cloudfoundry.org/buildpackapplifecycle/launcher/*.go # gosub
   - code.cloudfoundry.org/bytefmt/*.go # gosub
   - code.cloudfoundry.org/cacheddownloader/*.go # gosub
+  - code.cloudfoundry.org/lager/*.go # gosub
   - github.com/cloudfoundry-incubator/candiedyaml/*.go # gosub
   - github.com/cloudfoundry/systemcerts/*.go # gosub

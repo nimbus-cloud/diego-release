@@ -2,7 +2,7 @@
 
 * [Auctioneer](#auctioneer)
 * [BBS](#bbs)
-* [Converger](#converger)
+* [Locket](#locket)
 * [Rep](#rep)
 * [Route Emitter](#route-emitter)
 * [SSH Proxy](#ssh-proxy)
@@ -40,14 +40,7 @@
 | `ConvergenceTasksPruned`                              | Cumulative number of times the BBS has deleted a malformed Task during its Task convergence pass. Emitted periodically.                                                                                                          | number            |
 | `CrashedActualLRPs`                                   | Total number of LRP instances that have crashed. Emitted periodically.                                                                                                                                                           | number            |
 | `CrashingDesiredLRPs`                                 | Total number of DesiredLRPs that have at least one crashed instance. Emitted periodically.                                                                                                                                       | number            |
-| `Domain.` `<domain-name>`                             | Whether the '<domain-name>'' domain is up-to-date, so that instances from that domain have been synchronized with DesiredLRPs for Diego to run. 1 means the domain is up-to-date, no data means it is not. Emitted periodically. | 0 or 1 (boolean)  |
-| `ETCDLeader`                                          | Index of the leader node in the etcd cluster. Emitted periodically.                                                                                                                                                              | number            |
-| `ETCDRaftTerm`                                        | Raft term of the etcd cluster. Emitted periodically.                                                                                                                                                                             | number            |
-| `ETCDReceivedBandwidthRate`                           | Number of bytes per second received by the follower etcd node. Emitted periodically.                                                                                                                                             | bytes             |
-| `ETCDReceivedRequestRate`                             | Number of requests per second received by the follower etcd node. Emitted periodically.                                                                                                                                          | rate              |
-| `ETCDSentBandwidthRate`                               | Number of bytes per second sent by the leader etcd node. Emitted periodically.                                                                                                                                                   | bytes             |
-| `ETCDSentRequestRate`                                 | Number of requests per second sent by the leader etcd node. Emitted periodically.                                                                                                                                                | rate              |
-| `ETCDWatchers`                                        | Number of watches set against the etcd cluster. Emitted periodically.                                                                                                                                                            | number            |
+| `Domain.` `<domain-name>`                             | Whether the `<domain-name>` domain is up-to-date, so that instances from that domain have been synchronized with DesiredLRPs for Diego to run. 1 means the domain is up-to-date, no data means it is not. Emitted periodically. | 0 or 1 (boolean)  |
 | `EncryptionDuration`                                  | Time the BBS took to ensure all BBS records are encrypted with the current active encryption key. Emitted each time a BBS becomes the active master.                                                                             | ns                |
 | `LRPsClaimed`                                         | Total number of LRP instances that have been claimed by some cell. Emitted periodically.                                                                                                                                         | number            |
 | `LRPsDesired`                                         | Total number of LRP instances desired across all LRPs. Emitted periodically.                                                                                                                                                     | number            |
@@ -66,33 +59,40 @@
 | `TasksResolving`                                      | Total number of Tasks locked for deletion. Emitted periodically.                                                                                                                                                                 | number            |
 | `TasksRunning`                                        | Total number of Tasks running on cells. Emitted periodically.                                                                                                                                                                    | number            |
 
-## Converger
+## Locket
 
-| Metric                                      | Description                                                                                                                                                | Unit             |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----             |
-| `LockHeld.` `v1-locks-converge_lock`           | Whether a converger holds the convergence lock: 1 means the lock is held, and 0 means the lock was lost. Emitted periodically by the active converger.     | 0 or 1 (boolean) |
-| `LockHeldDuration.` `v1-locks-converge_lock`   | Time the active converger has held the convergence lock. Emitted periodically by the active converger.                                                     | ns               |
+| Metric                                               | Description                                                                                                                                                | Unit             |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----             |
+| `ActiveLocks`                                        | Total number of active locks. Emitted periodically.                                                                                                        | number           |
+| `ActivePresences`                                    | Total number of active presences.  Emitted periodically.                                                                                                   | number           |
+| `LocksExpired`                                       | Cumulative number of locks/presences that have expired.  Emitted when a lock or presence is expired.                                                       | number           |
 
 ## Rep
 
-| Metric                                      | Description                                                                                                                                                | Unit             |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----             |
-| `CapacityRemainingContainers`               | Remaining number of containers this cell can host. Emitted periodically.                                                                                   | number           |
-| `CapacityRemainingDisk`                     | Remaining amount of disk available for this cell to allocate to containers.  Emitted periodically.                                                         | bytes            |
-| `CapacityRemainingMemory`                   | Remaining amount of memory available for this cell to allocate to containers.  Emitted periodically.                                                       | bytes            |
-| `CapacityTotalContainers`                   | Total number of containers this cell can host. Emitted periodically.                                                                                       | number           |
-| `CapacityTotalDisk`                         | Total amount of disk available for this cell to allocate to containers. Emitted periodically.                                                              | bytes            |
-| `CapacityTotalMemory`                       | Total amount of memory available for this cell to allocate to containers.  Emitted periodically.                                                           | bytes            |
-| `ContainerCount`                            | Number of containers hosted on the cell. Emitted periodically.                                                                                             | number           |
-| `GardenContainerCreationDuration`           | Time the rep's Garden backend took to create a container. Emitted after every successful container creation.                                               | ns               |
-| `RepBulkSyncDuration`                       | Time the cell rep took to synchronize the ActualLRPs it has claimed with its actual garden containers. Emitted periodically by each rep.                   | ns               |
-| `StalledGardenDuration`                     | Time the rep is waiting on its garden backend to become healthy during startup.  Emitted only if garden not responsive when the rep starts up.             | ns               |
-| `StrandedEvacuatingActualLRPs`              | Evacuating ActualLPRs that timed out during the evacuation process. Emitted when evacuation doesn't complete successful.                                   | number           |
-| `UnhealthyCell`                             | Whether the cell has failed to pass its healthcheck against the garden backend.  0 signifies healthy, and 1 signifies unhealthy. Emitted periodically.     | 0 or 1 (boolean) |
-| `VolmanMountDuration`                       | Time volman took to mount a volume. Emitted by each rep when volumes are mounted.                                                                          | ns               |
-| `VolmanMountErrors`                         | Count of failed volume mounts. Emitted periodically by each rep.                                                                                           | number           |
-| `VolmanUnmountDuration`                     | Time volman took to unmount a volume. Emitted by each rep when volumes are mounted.                                                                        | ns               |
-| `VolmanUnmountErrors`                       | Count of failed volume unmounts. Emitted periodically by each rep.                                                                                         | number           |
+| Metric                                               | Description                                                                                                                                                | Unit             |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----             |
+| `CapacityRemainingContainers`                        | Remaining number of containers this cell can host. Emitted periodically.                                                                                   | number           |
+| `CapacityRemainingDisk`                              | Remaining amount of disk available for this cell to allocate to containers.  Emitted periodically.                                                         | bytes            |
+| `CapacityRemainingMemory`                            | Remaining amount of memory available for this cell to allocate to containers.  Emitted periodically.                                                       | bytes            |
+| `CapacityTotalContainers`                            | Total number of containers this cell can host. Emitted periodically.                                                                                       | number           |
+| `CapacityTotalDisk`                                  | Total amount of disk available for this cell to allocate to containers. Emitted periodically.                                                              | bytes            |
+| `CapacityTotalMemory`                                | Total amount of memory available for this cell to allocate to containers.  Emitted periodically.                                                           | bytes            |
+| `ContainerCount`                                     | Number of containers hosted on the cell. Emitted periodically.                                                                                             | number           |
+| `GardenContainerCreationDuration`                    | Time the rep's Garden backend took to create a container. Emitted after every successful container creation. (Deprecated)                                  | ns               |
+| `GardenContainerCreationSucceededDuration`           | Time the rep's Garden backend took to create a container. Emitted after every successful container creation.                                               | ns               |
+| `GardenContainerCreationFailedDuration`              | Time the rep's Garden backend took to create a container. Emitted after every failed container creation.                                                   | ns               |
+| `GardenContainerDestructionSucceededDuration`        | Time the rep's Garden backend took to destroy a container. Emitted after every successful container destruction.                                           | ns               |
+| `GardenContainerDestructionFailedDuration`           | Time the rep's Garden backend took to destroy a container. Emitted after every failed container destruction.                                               | ns               |
+| `RepBulkSyncDuration`                                | Time the cell rep took to synchronize the ActualLRPs it has claimed with its actual garden containers. Emitted periodically by each rep.                   | ns               |
+| `StalledGardenDuration`                              | Time the rep is waiting on its garden backend to become healthy during startup.  Emitted only if garden not responsive when the rep starts up.             | ns               |
+| `StrandedEvacuatingActualLRPs`                       | Evacuating ActualLPRs that timed out during the evacuation process. Emitted when evacuation doesn't complete successful.                                   | number           |
+| `UnhealthyCell`                                      | Whether the cell has failed to pass its healthcheck against the garden backend.  0 signifies healthy, and 1 signifies unhealthy. Emitted periodically.     | 0 or 1 (boolean) |
+| `VolmanMountDuration`                                | Time volman took to mount a volume. Emitted by each rep when volumes are mounted.                                                                          | ns               |
+| `VolmanMountDurationFor`                             | Time volman took to mount a volume with a specific volume driver. Emitted by each rep when volumes are mounted.                                            | ns               |
+| `VolmanMountErrors`                                  | Count of failed volume mounts. Emitted periodically by each rep.                                                                                           | number           |
+| `VolmanUnmountDuration`                              | Time volman took to unmount a volume. Emitted by each rep when volumes are mounted.                                                                        | ns               |
+| `VolmanUnmountDurationFor`                           | Time volman took to unmount a volume with a specifc volume driver. Emitted by each rep when volumes are mounted.                                           | ns               |
+| `VolmanUnmountErrors`                                | Count of failed volume unmounts. Emitted periodically by each rep.                                                                                         | number           |
 
 ## Route Emitter
 
@@ -107,6 +107,7 @@
 | `RoutesSynced`                                 | Cumulative number of route registrations emitted from the route-emitter during its periodic route-table synchronization.                                         | number           |
 | `RoutesTotal`                                  | Number of routes in the route-emitter's routing table. Emitted periodically.                                                                                     | number           |
 | `RoutesUnregistered`                           | Cumulative number of route unregistrations emitted from the route-emitter as it reacts to changes to LRPs.                                                       | number           |
+| `ConsulDownMode`                               | Whether the route-emitter is able to connect with the consul correctly                                                                                           | 0 or 1 boolean   |
 
 ## SSH Proxy
 

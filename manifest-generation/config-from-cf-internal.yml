@@ -17,23 +17,30 @@ config_from_cf:
     encrypt_keys: (( properties.consul.encrypt_keys ))
     server_cert: (( properties.consul.server_cert ))
     server_key: (( properties.consul.server_key ))
+  etcd:
+    advertise_urls_dns_suffix: (( properties.etcd.advertise_urls_dns_suffix ))
+    ca_cert: (( properties.etcd.ca_cert ))
+    client_cert: (( properties.etcd.client_cert ))
+    client_key: (( properties.etcd.client_key ))
+    require_ssl: (( properties.etcd.require_ssl ))
   loggregator:
     etcd_machines: (( properties.loggregator.etcd.machines ))
     etcd_require_ssl: (( properties.loggregator.etcd.require_ssl ))
     etcd_ca_cert: (( properties.loggregator.etcd.ca_cert ))
     shared_secret: (( properties.loggregator_endpoint.shared_secret ))
-    traffic_controller_url: (( "wss://doppler." properties.system_domain ":443" ))
     dropsonde_incoming_port: (( properties.loggregator.dropsonde_incoming_port ))
     tls:
       ca_cert: (( properties.loggregator.tls.ca_cert ))
+      metron:
+        cert: (( properties.loggregator.tls.metron.cert ))
+        key: (( properties.loggregator.tls.metron.key ))
   metron_endpoint:
     shared_secret: (( properties.metron_endpoint.shared_secret ))
   metron_agent:
+    grpc_port: (( properties.metron_agent.grpc_port ))
     dropsonde_incoming_port: (( properties.metron_agent.dropsonde_incoming_port ))
     protocols: (( properties.metron_agent.protocols ))
     preferred_protocol: (( properties.metron_agent.preferred_protocol ))
-    enable_buffer: (( properties.metron_agent.enable_buffer ))
-    buffer_size: (( properties.metron_agent.buffer_size ))
     tls:
       client_cert: (( properties.metron_agent.tls.client_cert ))
       client_key: (( properties.metron_agent.tls.client_key ))
@@ -46,10 +53,17 @@ config_from_cf:
     port: (( properties.nats.port ))
     machines: (( properties.nats.machines ))
   syslog_daemon_config: (( properties.syslog_daemon_config ))
+  system_domain: (( properties.system_domain ))
   uaa:
+    tls_port: (( properties.uaa.ssl.port ))
+    ca_cert: (( properties.uaa.ca_cert ))
     ssh_proxy_client_secret: (( properties.uaa.clients.ssh-proxy.secret ))
-    token_url: (( properties.uaa.url "/oauth/token" ))
+    tcp_emitter_client_secret: (( properties.uaa.clients.tcp_emitter.secret ))
   app_domains: (( properties.app_domains ))
+  sql:
+    host: (( properties.databases.address ))
+    port: (( properties.databases.port ))
+    password: (( properties.databases.roles.diego.password ))
 
 # The keys below should not be included in the final stub
 name: (( merge ))
@@ -73,6 +87,18 @@ properties:
     encrypt_keys: (( merge ))
     server_cert: (( merge ))
     server_key: (( merge ))
+  databases:
+    address: (( merge || nil ))
+    port: (( merge || nil ))
+    roles:
+    - name: diego
+      password: (( merge || nil ))
+  etcd:
+    advertise_urls_dns_suffix: (( merge ))
+    ca_cert: (( merge || nil ))
+    client_cert: (( merge || nil ))
+    client_key: (( merge || nil ))
+    require_ssl: (( merge || nil ))
   loggregator:
     etcd:
       ca_cert: null
@@ -81,16 +107,18 @@ properties:
     dropsonde_incoming_port: (( merge || nil ))
     tls:
       ca_cert: (( merge || nil ))
+      metron:
+        cert: (( merge || nil ))
+        key: (( merge || nil ))
   loggregator_endpoint:
     shared_secret: (( merge ))
   metron_endpoint:
     shared_secret: (( merge ))
   metron_agent:
+    grpc_port: (( merge || nil ))
     dropsonde_incoming_port: (( merge || nil ))
     protocols: (( merge || nil ))
     preferred_protocol: (( merge || nil ))
-    enable_buffer: (( merge || nil ))
-    buffer_size: (( merge || nil ))
     tls:
       client_cert: (( merge || nil ))
       client_key: (( merge || nil ))
@@ -110,4 +138,9 @@ properties:
     clients:
       ssh-proxy:
         secret: (( merge || nil ))
+      tcp_emitter:
+        secret: (( merge || nil ))
     url: (( merge ))
+    ca_cert: (( merge ))
+    ssl:
+      port: (( merge ))

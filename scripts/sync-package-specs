@@ -28,6 +28,9 @@ function sync_package() {
         if ls ../../src/${package}/*.s >/dev/null 2>&1; then
           echo ${package} | sed -e 's/\(.*\)/  - \1\/*.s # gosub/g'
         fi
+        if ls ../../src/${package}/*.h >/dev/null 2>&1; then
+          echo ${package} | sed -e 's/\(.*\)/  - \1\/*.h # gosub/g'
+        fi
       done
     } > spec.new
 
@@ -40,9 +43,11 @@ sync_package bbs                     -app  code.cloudfoundry.org/bbs/cmd/bbs &
 sync_package cfdot                   -app  code.cloudfoundry.org/cfdot &
 sync_package diego-sshd              -app  code.cloudfoundry.org/diego-ssh/cmd/sshd &
 sync_package file_server             -app  code.cloudfoundry.org/fileserver/cmd/file-server &
+sync_package locket                  -app  code.cloudfoundry.org/locket/cmd/locket &
 sync_package rep                     -app  code.cloudfoundry.org/rep/cmd/rep &
 sync_package rep_windows             -app  code.cloudfoundry.org/rep/cmd/rep &
 sync_package route_emitter           -app  code.cloudfoundry.org/route-emitter/cmd/route-emitter &
+sync_package route_emitter_windows   -app  code.cloudfoundry.org/route-emitter/cmd/route-emitter &
 sync_package ssh_proxy               -app  code.cloudfoundry.org/diego-ssh/cmd/ssh-proxy &
 
 sync_package docker_app_lifecycle    -app  code.cloudfoundry.org/dockerapplifecycle/builder \

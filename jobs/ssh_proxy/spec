@@ -7,6 +7,12 @@ templates:
   bbs_ca.crt.erb: config/certs/bbs/ca.crt
   bbs_client.crt.erb: config/certs/bbs/client.crt
   bbs_client.key.erb: config/certs/bbs/client.key
+  uaa_ca.crt.erb: config/certs/uaa/ca.crt
+  ssh_proxy.json.erb: config/ssh_proxy.json
+
+provides:
+- name: ssh_proxy
+  type: ssh_proxy
 
 packages:
   - pid_utils
@@ -19,6 +25,9 @@ properties:
   diego.ssh_proxy.listen_addr:
     description: "address for the proxy to listen on"
     default: "0.0.0.0:2222"
+  diego.ssh_proxy.healthcheck_listen_addr:
+    description: "address for the ssh proxy healthcheck server"
+    default: "0.0.0.0:2223"
   diego.ssh_proxy.bbs.api_location:
     description: "Address to the BBS Server"
     default: "bbs.service.cf.internal:8889"
@@ -51,6 +60,14 @@ properties:
     description: URL of the UAA token endpoint
   diego.ssh_proxy.uaa_secret:
     description: The oauth client secret used to authenticate the ssh-proxy with the uaa
+
+  diego.ssh_proxy.uaa.url:
+    description: The domain name of the UAA
+    default: "https://uaa.service.cf.internal"
+  diego.ssh_proxy.uaa.port:
+    description: The port to contact UAA on
+  diego.ssh_proxy.uaa.ca_cert:
+    description: The CA certificate of the UAA
 
   diego.ssh_proxy.cc.internal_service_hostname:
     description: Internal service hostname of Cloud Controller Api

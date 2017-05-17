@@ -44,10 +44,10 @@ automated system uses, then we manually make the Pull Request as having a CLA on
 
 
 ----
-##Initial Setup
+## Initial Setup
 This BOSH release doubles as a `$GOPATH`. It will automatically be set up for you if you have [direnv](http://direnv.net) installed.
 
-**NOTE:** diego-release and its components assume you're running go **1.6**. The project may not compile or work as expected with other versions of go.
+**NOTE:** diego-release and its components assume you're running go **1.7**. The project may not compile or work as expected with other versions of go.
 
     # create parent directory of cf-release and diego-release
     mkdir -p ~/workspace
@@ -66,9 +66,9 @@ This BOSH release doubles as a `$GOPATH`. It will automatically be set up for yo
     ./scripts/update
     popd
 
-    # clone garden-linux-release
-    git clone https://github.com/cloudfoundry-incubator/garden-linux-release.git
-    pushd garden-linux-release
+    # clone garden-runc-release
+    git clone https://github.com/cloudfoundry/garden-runc-release.git
+    pushd garden-runc-release
     git checkout master && git submodule update --init --recursive
     popd
 
@@ -99,20 +99,17 @@ To be able to run unit tests, you'll also need to install the following binaries
     # Install gnatsd
     go install github.com/apcera/gnatsd
 
-    # Install etcd
-    go install github.com/coreos/etcd
-
     # Install consul
     if uname -a | grep Darwin; then os=darwin; else os=linux; fi
-    curl -L -o $TMPDIR/consul-0.6.4.zip "https://releases.hashicorp.com/consul/0.6.4/consul_0.6.4_${os}_amd64.zip"
-    unzip $TMPDIR/consul-0.6.4.zip -d $GOPATH/bin
-    rm $TMPDIR/consul-0.6.4.zip
+    curl -L -o $TMPDIR/consul-0.7.0.zip "https://releases.hashicorp.com/consul/0.7.0/consul_0.7.0_${os}_amd64.zip"
+    unzip $TMPDIR/consul-0.7.0.zip -d $GOPATH/bin
+    rm $TMPDIR/consul-0.7.0.zip
 
 To be able to run the integration test suite ("inigo"), you'll need to have a local [Concourse](http://concourse.ci) VM. Follow the instructions on the Concourse [README](https://github.com/concourse/concourse/blob/master/README.md) to set it up locally using [vagrant](https://www.vagrantup.com/). Download the fly CLI as instructed and move it somewhere visible to your `$PATH`.
 
 ### Running the SQL unit tests
 
-To run the SQL unit tests locally requires running MySQL and Postgres with the correct configuration.
+As of Diego 1.0, SQL unit tests are the default unit tests for Diego. To run the SQL unit tests locally requires running MySQL and Postgres with the correct configuration.
 
 On OS X, follow these steps to install and configure MySQL and Postgres:
 
@@ -147,8 +144,9 @@ On OS X, follow these steps to install and configure MySQL and Postgres:
 
         CREATE USER 'diego'@'localhost' IDENTIFIED BY 'diego_password';
         GRANT ALL PRIVILEGES ON `diego\_%`.* TO 'diego'@'localhost';
+        GRANT ALL PRIVILEGES ON `routingapi\_%`.* TO 'diego'@'localhost';
 
-8. Install Postgres:
+8. Install Postgres (version 9.4 or higher is required):
 
         brew install postgresql
 
@@ -158,7 +156,7 @@ On OS X, follow these steps to install and configure MySQL and Postgres:
 9. Create a self-signed certificate as described in the [PostgreSQL documentation](https://www.postgresql.org/docs/9.4/static/ssl-tcp.html#SSL-CERTIFICATE-CREATION). 
    Save the certificate and key to a local directory of your choosing.
 
-10. Edit the `/usr/local/var/postgres/postgres.conf` file to set `ssl = on` and to refer to the certificate and key created above. For example:
+10. Edit the `/usr/local/var/postgres/postgresql.conf` file to set `ssl = on` and to refer to the certificate and key created above. For example:
 
         ssl = on
         ssl_cert_file = '/path/to/server.crt'
@@ -181,11 +179,10 @@ On OS X, follow these steps to install and configure MySQL and Postgres:
     tests, run the following command from
     the root of diego-release:
 
-        RUN_SQL_TESTS=true ./scripts/run-unit-tests
+        ./scripts/run-unit-tests
 
    This command will run all regular unit tests, as well as BBS and component
-   integration tests where a backing store is required in both etcd-backed,
-   MySQL-backed, and Postgres-backed modes.
+   integration tests where a backing store is required in MySQL-backed and Postgres-backed modes.
 
 ## <a name="deploy-bosh-lite"></a> Deploying Diego to BOSH-Lite
 
@@ -232,7 +229,7 @@ On OS X, follow these steps to install and configure MySQL and Postgres:
 1. Generate the Diego manifests:
 
         cd ~/workspace/diego-release
-        ./scripts/generate-bosh-lite-manifests # specify [-g] for garden-runc-release
+        ./scripts/generate-bosh-lite-manifests
 
 1. Create, upload, and deploy the CF release:
 
@@ -242,16 +239,9 @@ On OS X, follow these steps to install and configure MySQL and Postgres:
         bosh -n upload release &&
         bosh -n deploy
 
-1. Upload the latest garden-linux-release OR garden-runc-release:
+1. Upload the latest garden-runc-release:
 
-        bosh upload release https://bosh.io/d/github.com/cloudfoundry-incubator/garden-linux-release
-
-        # if you specified [-g] when you generated your manifest:
-        # bosh upload release https://bosh.io/d/github.com/cloudfoundry-incubator/garden-runc-release
-
-1. Upload the latest etcd-release:
-
-        bosh upload release https://bosh.io/d/github.com/cloudfoundry-incubator/etcd-release
+        bosh upload release https://bosh.io/d/github.com/cloudfoundry/garden-runc-release
 
 1. Create, upload, and deploy the Diego release:
 
@@ -298,12 +288,21 @@ Once you've followed the steps [above](#initial-setup) to install ginkgo and the
 
     ./scripts/run-unit-tests
 
+We recommend running the unit tests against both a local MySQL and a local PostgreSQL database as described [above](#running-the-sql-unit-tests).
+
+If you want to run the entire unit test suite on concourse and have the `fly` CLI on your path, you can run
+
+    ./scripts/run-unit-tests-concourse
+
+from the root of diego-release. By default this script will attempt to run the unit tests on your local concourse installation, but you can change your concourse target by setting the `DIEGO_CI_TARGET` environment variable.
+
 ### Running Integration Tests
 
-If your local concourse VM is up and running, you have the `fly` CLI visible on your `$PATH`, and you've cloned garden-linux-release (see [Initial Setup](#initial-setup) for details), you can run
+If your local concourse VM is up and running, you have the `fly` CLI visible on your `$PATH`, and you've cloned garden-runc-release (see [Initial Setup](#initial-setup) for details), you can run
 
     ./scripts/run-inigo
-from the root of diego-release to run the integration tests.
+
+from the root of diego-release to run the integration tests. You can also run the integration tests against another concourse deployment by setting the `DIEGO_CI_TARGET` environment variable.
 
 ###<a name="smokes-and-cats"></a> Running Smoke Tests, and CATs
 

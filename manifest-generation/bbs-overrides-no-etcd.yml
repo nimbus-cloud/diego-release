@@ -4,11 +4,14 @@ bbs_overrides:
     consul: {}
   job_templates:
   - name: consul_agent
+    consumes: {consul: nil}
     release: cf
   - name: bbs
     release: diego
   - name: metron_agent
     release: cf
+  - name: cfdot
+    release: diego
   etcd_properties: {}
   bbs_properties:
     etcd:

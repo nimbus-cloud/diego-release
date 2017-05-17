@@ -1,5 +1,0 @@
-garden_overrides:
-  job_release: garden-runc
-  release:
-    name: garden-runc
-    version: (( release_versions.garden-runc || "latest" ))

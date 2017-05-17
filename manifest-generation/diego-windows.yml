@@ -44,15 +44,7 @@ resource_pools:
 
 jobs:
   - name: cell_windows_z1
-    templates:
-      - name: rep_windows
-        release: diego
-      - name: garden-windows
-        release: garden-windows
-      - name: consul_agent_windows
-        release: garden-windows
-      - name: metron_agent_windows
-        release: garden-windows
+    templates: (( base_templates.cell_windows route_emitter_overrides.templates ))
     instances: (( instance_count_overrides.cell_windows_z1.instances || 1 ))
     resource_pool: cell_windows_z1
     networks:
@@ -61,22 +53,38 @@ jobs:
       serial: false
       max_in_flight: (( instance_count_overrides.cell_windows_z1.max_in_flight || 1 ))
     properties:
+      tls: &cell-tls-configuration
+        cert: (( property_overrides.cell.tls.cert || property_overrides.rep.server_cert || nil ))
+        key: (( property_overrides.cell.tls.key || property_overrides.rep.server_key || nil ))
+        ca_cert: (( property_overrides.cell.tls.ca_cert || property_overrides.rep.ca_cert || nil ))
+      loggregator: &cell-loggregator
+        use_v2_api:  (( property_overrides.loggregator.use_v2_api || nil ))
+        v2_api_port: (( config_from_cf.metron_agent.grpc_port || nil ))
+        ca_cert:     (( property_overrides.loggregator.tls.ca_cert || nil ))
+        cert:        (( property_overrides.loggregator.tls.cert || nil ))
+        key:         (( property_overrides.loggregator.tls.key || nil))
       metron_agent:
         zone: z1
       diego:
         rep:
           zone: z1
+        route_emitter:
+          local_mode: (( route_emitter_overrides.local_mode_enabled ))
+      tcp:
+        enabled: (( property_overrides.tcp_emitter.enabled || nil ))
+      routing_api:
+        url: (( property_overrides.tcp_emitter.routing_api_url || nil ))
+        port:  (( property_overrides.tcp_emitter.routing_api_port || nil ))
+      uaa: &route_emitter_uaa_configuration
+        skip_cert_verify: (( property_overrides.tcp_emitter.uaa_skip_cert_verify || nil ))
+        hostname: (( property_overrides.tcp_emitter.uaa_hostname || nil ))
+        port: (( config_from_cf.uaa.tls_port ))
+        ca_cert: (( config_from_cf.uaa.ca_cert ))
+        client_secret: (( config_from_cf.uaa.tcp_emitter_client_secret ))
+        client_name: (( property_overrides.tcp_emitter.uaa_client_name || nil ))
 
   - name: cell_windows_z2
-    templates:
-      - name: rep_windows
-        release: diego
-      - name: garden-windows
-        release: garden-windows
-      - name: consul_agent_windows
-        release: garden-windows
-      - name: metron_agent_windows
-        release: garden-windows
+    templates: (( base_templates.cell_windows route_emitter_overrides.templates ))
     instances: (( instance_count_overrides.cell_windows_z2.instances || 1 ))
     resource_pool: cell_windows_z2
     networks:
@@ -85,22 +93,24 @@ jobs:
       serial: false
       max_in_flight: (( instance_count_overrides.cell_windows_z2.max_in_flight || 1 ))
     properties:
+      tls: *cell-tls-configuration
+      loggregator: *cell-loggregator
       metron_agent:
         zone: z2
       diego:
         rep:
           zone: z2
+        route_emitter:
+          local_mode: (( route_emitter_overrides.local_mode_enabled ))
+      tcp:
+        enabled: (( property_overrides.tcp_emitter.enabled || nil ))
+      routing_api:
+        uri: (( property_overrides.tcp_emitter.routing_api_uri || nil ))
+        port:  (( property_overrides.tcp_emitter.routing_api_port || nil ))
+      uaa: *route_emitter_uaa_configuration
 
   - name: cell_windows_z3
-    templates:
-      - name: rep_windows
-        release: diego
-      - name: garden-windows
-        release: garden-windows
-      - name: consul_agent_windows
-        release: garden-windows
-      - name: metron_agent_windows
-        release: garden-windows
+    templates: (( base_templates.cell_windows route_emitter_overrides.templates ))
     instances: (( instance_count_overrides.cell_windows_z3.instances || 0 ))
     resource_pool: cell_windows_z3
     networks:
@@ -109,11 +119,21 @@ jobs:
       serial: false
       max_in_flight: (( instance_count_overrides.cell_windows_z3.max_in_flight || 1 ))
     properties:
+      tls: *cell-tls-configuration
+      loggregator: *cell-loggregator
       metron_agent:
         zone: z3
       diego:
         rep:
           zone: z3
+        route_emitter:
+          local_mode: (( route_emitter_overrides.local_mode_enabled ))
+      tcp:
+        enabled: (( property_overrides.tcp_emitter.enabled || nil ))
+      routing_api:
+        uri: (( property_overrides.tcp_emitter.routing_api_uri || nil ))
+        port:  (( property_overrides.tcp_emitter.routing_api_port || nil ))
+      uaa: *route_emitter_uaa_configuration
 
 properties:
   # -- Properties below are used by the metron_agent job from cf-release --
@@ -121,8 +141,6 @@ properties:
     deployment: (( name ))
     protocols: (( config_from_cf.metron_agent.protocols ))
     preferred_protocol: (( config_from_cf.metron_agent.preferred_protocol ))
-    enable_buffer: (( config_from_cf.metron_agent.enable_buffer ))
-    buffer_size: (( config_from_cf.metron_agent.buffer_size ))
     tls:
       client_cert: (( config_from_cf.metron_agent.tls.client_cert ))
       client_key: (( config_from_cf.metron_agent.tls.client_key ))
@@ -138,6 +156,9 @@ properties:
     dropsonde_incoming_port: (( config_from_cf.loggregator.dropsonde_incoming_port ))
     tls:
       ca_cert: (( config_from_cf.loggregator.tls.ca_cert ))
+      metron:
+        cert: (( config_from_cf.loggregator.tls.metron.cert ))
+        key: (( config_from_cf.loggregator.tls.metron.key ))
   metron_endpoint:
     shared_secret: (( config_from_cf.metron_endpoint.shared_secret ))
   syslog_daemon_config: (( config_from_cf.syslog_daemon_config ))
@@ -145,6 +166,7 @@ properties:
   # -- Properties below are used by the consul_agent job from cf-release --
   consul:
     agent:
+      require_ssl: (( property_overrides.consul.agent.require_ssl || nil ))
       datacenter: (( config_from_cf.consul.datacenter ))
       domain: (( config_from_cf.consul.domain ))
       log_level: (( config_from_cf.consul.log_level ))
@@ -178,17 +200,68 @@ properties:
       evacuation_timeout_in_seconds: (( property_overrides.rep.evacuation_timeout_in_seconds || nil ))
       trusted_certs: (( property_overrides.rep.trusted_certs || nil ))
       log_level: (( property_overrides.rep.log_level || nil ))
+      require_tls: (( property_overrides.rep.require_tls || nil ))
+      ca_cert: (( property_overrides.rep.ca_cert || nil ))
+      server_cert: (( property_overrides.rep.server_cert || nil ))
+      server_key: (( property_overrides.rep.server_key || nil ))
+      consul:
+        require_tls: (( property_overrides.rep.consul.require_tls || nil ))
+        ca_cert: (( config_from_cf.consul.ca_cert ))
+        client_cert: (( property_overrides.rep.consul.client_cert || nil ))
+        client_key: (( property_overrides.rep.consul.client_key || nil ))
+      locket:
+        api_location: (( sql_lock_overrides.locket.api_location ))
+
+    route_emitter:
+      dropsonde_port: (( config_from_cf.metron_agent.dropsonde_incoming_port ))
+      bbs:
+        api_location: (( property_overrides.bbs.api_location || nil ))
+        ca_cert: (( property_overrides.bbs.ca_cert ))
+        client_cert: (( property_overrides.bbs.client_cert ))
+        client_key: (( property_overrides.bbs.client_key ))
+        require_ssl: (( property_overrides.bbs.require_ssl || nil ))
+        client_session_cache_size: (( property_overrides.bbs.client_session_cache_size || nil ))
+        max_idle_conns_per_host: (( property_overrides.bbs.max_idle_conns_per_host || nil ))
+      nats:
+        machines: (( config_from_cf.nats.machines ))
+        user: (( config_from_cf.nats.user ))
+        password: (( config_from_cf.nats.password ))
+        port: (( config_from_cf.nats.port ))
+      log_level: (( property_overrides.route_emitter.log_level || nil ))
 
 # The keys below should not be included in the final stub
 config_from_cf: (( merge ))
 iaas_settings: (( merge ))
 instance_count_overrides: (( merge || nil ))
 property_overrides: (( merge ))
+sql_lock_overrides:
+  locket:
+    api_location: (( merge || nil ))
+
+base_templates:
+  cell_windows:
+  - name: hakim
+    release: garden-windows
+  - name: rep_windows
+    release: diego
+  - name: garden-windows
+    release: garden-windows
+  - name: consul_agent_windows
+    consumes: {consul: nil}
+    release: cf
+  - name: metron_agent_windows
+    release: cf
 
 base_releases:
+  - name: cf
+    version: (( release_versions.cf || "latest" ))
   - name: diego
     version: (( release_versions.diego || "latest" ))
   - name: garden-windows
     version: (( release_versions.garden-windows || "latest" ))
 
 release_versions: (( merge || nil ))
+
+route_emitter_overrides:
+  templates: (( merge || [] ))
+  local_mode_enabled: false

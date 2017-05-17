@@ -77,7 +77,7 @@ function wait_pid_death() {
 # @param pidfile
 # @param timeout [default 25s]
 #
-# For a pid found in :pidfile:, send a `kill -6`, then wait for :timeout: seconds to
+# For a pid found in :pidfile:, send a `kill`, then wait for :timeout: seconds to
 # see if it dies on its own. If not, send it a `kill -9`. If the process does die,
 # exit 0 and remove the :pidfile:. If after all of this, the process does not actually
 # die, exit 1.
@@ -182,5 +182,6 @@ file_must_include() {
 }
 
 running_in_container() {
-  grep -q -E '/instance|/docker/' /proc/self/cgroup
+  # look for a non-root cgroup
+  grep --quiet --invert-match ':/$' /proc/self/cgroup
 }
