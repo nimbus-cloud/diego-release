@@ -46,7 +46,7 @@
     supported_providers: p("diego.rep.rootfs_providers"),
     temp_dir: "#{TMP_DIR}",
     unhealthy_monitoring_interval: "#{p("diego.executor.unhealthy_monitoring_interval_in_seconds")}s",
-    zone: spec.az || p("diego.rep.zone"),
+    zone: "#{spec.az}-#{p("diego.zone")}" || p("diego.rep.zone"),
     nimbus_zone: p("diego.zone"),
     firewall_env: p("diego.firewall_environment")
   }
