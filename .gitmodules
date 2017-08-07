@@ -222,7 +222,7 @@
 	branch = master
 [submodule "src/code.cloudfoundry.org/cfhttp"]
 	path = src/code.cloudfoundry.org/cfhttp
-	url = https://github.com/cloudfoundry/cfhttp
+	url = https://github.com/nimbus-cloud/cfhttp
 	branch = master
 [submodule "src/code.cloudfoundry.org/dockerapplifecycle"]
 	path = src/code.cloudfoundry.org/dockerapplifecycle
