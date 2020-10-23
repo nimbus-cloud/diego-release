@@ -249,6 +249,8 @@ properties:
 
   diego.zone:
     description: "Site (datacenter name), used for node name uniqness"
+  diego.nimbus_zone:
+    description: "specific AZ or datacenter to be used by zoned vcap services"
   diego.firewall_environment:
     description: "nb-config firewall environment: test, dev, stage, prod"
 

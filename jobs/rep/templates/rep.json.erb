@@ -51,6 +51,12 @@
     firewall_env: p("diego.firewall_environment")
   }
 
+  if_p("diego.nimbus_zone") do |value|
+    if !value.empty?
+      config[:nimbus_zone] = "#{value}"
+    end
+  end
+
   if_p("diego.executor.volman.driver_paths") do |value|
     config[:volman_driver_paths] = value
   end
